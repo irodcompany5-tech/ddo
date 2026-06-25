@@ -20,6 +20,7 @@ check('paper text extracted', () => fs.existsSync(path.join(root, 'ddo_paper.txt
 check('.env.example exists', () => fs.existsSync(path.join(root, '.env.example')));
 check('docs landing page exists', () => fs.existsSync(path.join(root, 'docs', 'README.md')));
 check('notebook walkthrough exists', () => fs.existsSync(path.join(root, 'notebooks', 'ddo_quickstart.ipynb')));
+check('benchmark manifest exists', () => fs.existsSync(path.join(root, 'benchmarks', 'manifest.json')));
 check('public UI exists', () => fs.existsSync(path.join(root, 'public', 'index.html')));
 check('JavaScript library entrypoint exists', () => fs.existsSync(path.join(root, 'src', 'index.js')));
 check('JavaScript CLI exists', () => fs.existsSync(path.join(root, 'bin', 'ddo.js')));

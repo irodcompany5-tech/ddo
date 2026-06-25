@@ -19,6 +19,7 @@ Use it as a web UI, a Python package, an npm package, a CLI, a Jupyter notebook,
 | Use it from Node.js | [JavaScript / npm guide](docs/javascript.md) |
 | Plug into DeepEval | [DeepEval guide](docs/deepeval.md) |
 | Plug into another evaluator | [Evaluation adapters](docs/evaluation-adapters.md) |
+| Benchmark before/after results | [Benchmarking guide](docs/benchmarking.md) |
 | Run from a terminal | [CLI guide](docs/cli.md) |
 | Understand all docs | [Documentation hub](docs/README.md) |
 
@@ -152,6 +153,7 @@ Start with:
 | [ddo_optimizer/](ddo_optimizer/) | Python package, CLI, OpenAI client, DeepEval adapter |
 | [notebooks/](notebooks/) | Jupyter walkthroughs |
 | [examples/](examples/) | Starter datasets |
+| [benchmarks/](benchmarks/) | Benchmark manifest and result table template |
 | [docs/](docs/) | User and maintainer documentation |
 | [.github/workflows/ci.yml](.github/workflows/ci.yml) | CI checks for code, docs, and tests |
 
@@ -160,6 +162,7 @@ Start with:
 ```bash
 npm run doctor
 npm run docs:check
+npm run benchmarks:table -- benchmarks/results-template.csv
 npm run check
 npm test
 ```

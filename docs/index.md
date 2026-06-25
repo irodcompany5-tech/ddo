@@ -14,6 +14,7 @@ Fast links:
 - [JavaScript / npm](javascript.md)
 - [DeepEval](deepeval.md)
 - [Evaluation adapters](evaluation-adapters.md)
+- [Benchmarking](benchmarking.md)
 - [Dataset format](dataset-format.md)
 - [Configuration](configuration.md)
 - [Troubleshooting](troubleshooting.md)

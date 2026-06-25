@@ -12,6 +12,7 @@ This is the documentation hub for Diagnostic Dialogue Optimization (DDO). It is 
 | Use Node.js | [JavaScript / npm](javascript.md) | ESM import, npm CLI, evaluator callback |
 | Use DeepEval | [DeepEval](deepeval.md) | Goldens, metrics, model callback adapter |
 | Use another eval platform | [Evaluation adapters](evaluation-adapters.md) | Generic evaluator contract for any framework |
+| Publish before/after evidence | [Benchmarking](benchmarking.md) | Benchmark shortlist, protocol, result table format |
 | Prepare data | [Dataset format](dataset-format.md) | JSON, JSONL, CSV, text, aliases, tips |
 | Tune settings | [Configuration](configuration.md) | API keys, model IDs, budgets, verifier settings |
 | Run terminal workflows | [CLI](cli.md) | Python and npm command examples |
@@ -75,6 +76,19 @@ Most production integrations use this shape:
 6. Review the accepted diff before shipping.
 
 The generic evaluator guides are [Evaluation adapters](evaluation-adapters.md) and [Integration guide](integrations.md).
+
+## Benchmark Evidence
+
+Use [Benchmarking](benchmarking.md) when you want public before/after evidence. It defines a conservative protocol:
+
+1. Use a public benchmark or internal holdout set.
+2. Split prompt-fitting examples from final evaluation examples.
+3. Run the baseline prompt.
+4. Run DDO on the fitting split.
+5. Re-run the optimized prompt on the held-out benchmark split.
+6. Publish baseline score, optimized score, delta, run date, model, evaluator, and dataset version.
+
+Do not publish synthetic or hand-entered improvement numbers as benchmark results.
 
 ## Recommended First Settings
 

@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "notes": "Curated benchmark candidates for evaluating whether DDO improves prompts. Use held-out scoring examples and do not optimize on the final scoring split.",
+  "benchmarks": [
+    {
+      "id": "ifeval",
+      "name": "IFEval",
+      "category": "instruction_following",
+      "why_use": "Directly measures instruction following, format compliance, constraints, and output structure, which are common DDO repair targets.",
+      "source_url": "https://github.com/google-research/google-research/tree/master/instruction_following_eval",
+      "runner_options": [
+        "deepeval",
+        "lm-evaluation-harness",
+        "custom"
+      ],
+      "first_run": {
+        "fit_examples": 20,
+        "heldout_examples": 100,
+        "metric": "overall_score"
+      }
+    },
+    {
+      "id": "gsm8k",
+      "name": "GSM8K",
+      "category": "math_reasoning",
+      "why_use": "Tests multi-step arithmetic reasoning and exact final-answer formatting.",
+      "source_url": "https://github.com/openai/grade-school-math",
+      "dataset_card_url": "https://huggingface.co/datasets/openai/gsm8k",
+      "runner_options": [
+        "deepeval",
+        "custom_exact_match"
+      ],
+      "first_run": {
+        "fit_examples": 20,
+        "heldout_examples": 100,
+        "metric": "exact_match"
+      }
+    },
+    {
+      "id": "big_bench_hard",
+      "name": "BIG-Bench Hard",
+      "category": "reasoning",
+      "why_use": "Covers hard reasoning tasks with target labels and exact-match style scoring; useful after IFEval and GSM8K are stable.",
+      "source_url": "https://github.com/suzgunmirac/BIG-Bench-Hard",
+      "runner_options": [
+        "deepeval",
+        "lm-evaluation-harness",
+        "custom"
+      ],
+      "first_run": {
+        "fit_examples": 20,
+        "heldout_examples": 100,
+        "metric": "overall_score",
+        "suggested_tasks": [
+          "boolean_expressions",
+          "date_understanding",
+          "logical_deduction_three_objects"
+        ]
+      }
+    },
+    {
+      "id": "promptbench",
+      "name": "PromptBench",
+      "category": "prompt_robustness",
+      "why_use": "Provides prompt engineering and adversarial prompt evaluation tooling for comparing DDO against prompt variants.",
+      "source_url": "https://github.com/microsoftarchive/promptbench",
+      "runner_options": [
+        "promptbench",
+        "custom"
+      ],
+      "first_run": {
+        "fit_examples": 20,
+        "heldout_examples": 100,
+        "metric": "task_score"
+      }
+    }
+  ]
+}
