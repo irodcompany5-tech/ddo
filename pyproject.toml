@@ -35,6 +35,7 @@ dependencies = [
 
 [project.optional-dependencies]
 deepeval = ["deepeval>=4.0.0"]
+notebook = ["notebook>=7.0.0", "ipykernel>=6.0.0"]
 dev = ["build>=1.2.0", "twine>=5.0.0"]
 
 [project.scripts]

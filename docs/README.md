@@ -10,6 +10,7 @@ This is the practical documentation hub for Diagnostic Dialogue Optimization (DD
 | Use DDO from Python with `pip` | [Python / pip](python.md) |
 | Use DDO from Node.js with `npm` | [JavaScript / npm](javascript.md) |
 | Use DDO with DeepEval metrics | [DeepEval](deepeval.md) |
+| Run a clickable notebook walkthrough | [Jupyter notebook](jupyter-notebook.md) |
 | Run DDO from a terminal | [CLI](cli.md) |
 | Prepare datasets | [Dataset format](dataset-format.md) |
 | Plug in your own evaluation platform | [Evaluation adapters](evaluation-adapters.md) |
@@ -36,6 +37,7 @@ The result is an optimized prompt, an audit trail of accepted edits, and the dia
 - Use **Python / pip** when your evaluation stack is Python-first.
 - Use **JavaScript / npm** when your product or evaluation harness is Node.js.
 - Use **DeepEval** when you already evaluate with DeepEval metrics and goldens.
+- Use the **Jupyter notebook** when you want a visual, step-by-step walkthrough with saved outputs.
 - Use the **external evaluator contract** when you have your own platform, CI eval job, LangSmith/Ragas-like harness, or internal scorer.
 
 ## Minimal Dataset

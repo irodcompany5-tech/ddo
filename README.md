@@ -15,6 +15,7 @@ Framework-specific guides:
 - [Python / pip](docs/python.md)
 - [JavaScript / npm](docs/javascript.md)
 - [DeepEval](docs/deepeval.md)
+- [Jupyter notebook](docs/jupyter-notebook.md)
 - [CLI](docs/cli.md)
 - [Web UI quickstart](docs/quickstart.md)
 - [Datasets](docs/dataset-format.md)
@@ -33,6 +34,8 @@ npm run dev
 ```
 
 Open `http://127.0.0.1:5174`.
+
+Prefer a notebook walkthrough first? Open [notebooks/ddo_quickstart.ipynb](notebooks/ddo_quickstart.ipynb) on GitHub or run it locally with the [Jupyter notebook guide](docs/jupyter-notebook.md).
 
 Add your API key either to `.env`:
 

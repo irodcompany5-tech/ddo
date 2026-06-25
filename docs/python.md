@@ -2,6 +2,8 @@
 
 Use this guide when your product, eval suite, or notebooks are Python-based.
 
+For a runnable notebook with saved outputs, open [notebooks/ddo_quickstart.ipynb](../notebooks/ddo_quickstart.ipynb) or follow the [Jupyter notebook guide](jupyter-notebook.md).
+
 ## 1. Install
 
 ```bash
