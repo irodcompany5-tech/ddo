@@ -4,6 +4,25 @@ Diagnostic Dialogue Optimization (DDO) is a prompt optimization framework based 
 
 This repository includes the paper, a full-stack OpenAI SDK implementation, a browser UI, npm and pip library entrypoints, a DeepEval adapter, Codespaces support, tests, a CI workflow template, and example data.
 
+## Documentation
+
+Read the full docs here:
+
+[docs/README.md](docs/README.md)
+
+Framework-specific guides:
+
+- [Python / pip](docs/python.md)
+- [JavaScript / npm](docs/javascript.md)
+- [DeepEval](docs/deepeval.md)
+- [CLI](docs/cli.md)
+- [Web UI quickstart](docs/quickstart.md)
+- [Datasets](docs/dataset-format.md)
+- [External evaluators](docs/evaluation-adapters.md)
+- [Configuration](docs/configuration.md)
+- [Usage scenarios](docs/scenarios.md)
+- [Troubleshooting](docs/troubleshooting.md)
+
 ## Quick Start
 
 ```bash
@@ -45,7 +64,7 @@ Python projects:
 pip install ddo-prompt-optimizer
 ```
 
-Until packages are published to npm/PyPI, install directly from GitHub:
+To install the latest source directly from GitHub:
 
 ```bash
 npm install github:irodcompany5-tech/ddo
