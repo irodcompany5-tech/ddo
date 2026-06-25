@@ -1,0 +1,20 @@
+{
+  "name": "ddo-prompt-optimizer",
+  "version": "0.1.0",
+  "description": "Diagnostic Dialogue Optimization framework for prompt repair.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "check": "node --check src/server.js && node --check src/ddoEngine.js && node --check src/openaiAdapter.js && node --check src/dataset.js && node --check src/env.js && node --check src/prompts.js && node --check src/utils.js && node --check public/app.js && node --check scripts/doctor.js",
+    "doctor": "node scripts/doctor.js",
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "openai": "^6.9.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+node_modules/
+run-results/
+coverage/
+.DS_Store
+.git-real/
+*.log
