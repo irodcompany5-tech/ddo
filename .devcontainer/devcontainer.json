@@ -1,0 +1,25 @@
+{
+  "name": "DDO Prompt Optimizer",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20-bookworm",
+  "forwardPorts": [5174],
+  "portsAttributes": {
+    "5174": {
+      "label": "DDO UI",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "npm install && npm run doctor",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.formatOnSave": true,
+        "files.eol": "\n",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "GitHub.vscode-github-actions"
+      ]
+    }
+  }
+}
