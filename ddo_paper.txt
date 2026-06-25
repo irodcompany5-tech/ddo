@@ -1,0 +1,561 @@
+    Diagnostic Dialogue Optimization: Repairing System
+                         Prompts
+     through Multi-Turn TeacherStudent Interrogation
+                                         [TODO: Your Name]1
+                   1
+                       [TODO: Your Aliation] , [TODO: your.email@domain]
+
+                                                June 6, 2026
+
+
+
+
+                                                  Abstract
+          Automatic prompt optimization (APO) has largely converged on a single template: run a
+      candidate prompt over a labeled dataset, collect aggregate errors, and ask a language model to
+      rewrite the prompt. This batch-and-rewrite paradigm treats the model under optimization as
+      an opaque scoring function and discards the rich, turn-by-turn information that surfaces when
+      one actually converses with it. We introduce Diagnostic Dialogue Optimization (DDO),
+      a prompt optimization framework in which a stronger     teacher model conducts a structured,
+      multi-turn diagnostic conversation with a student model that operates under the prompt being
+      optimized. Rather than scoring the student in aggregate, the teacher interrogates itprobing
+      reasoning, edge-case handling, format adherence, and instruction followingaccumulates a per-
+      sistent   weakness prole across turns, and then issues a targeted, minimal edit to the student's
+      system prompt that addresses the specic deciency the conversation exposed. The conversation
+      is then reset and the loop repeats on the repaired prompt. We formalize DDO as a partially
+      observable optimization process, give an explicit algorithm, and distinguish it from (i) batch
+      APO methods such as ProTeGi and OPRO, (ii) single-turn Socratic prompt-rewriting such as
+      MARS, and (iii) conversational evaluation and red-teaming methods such as ATA and PAIR,
+      which diagnose but do not repair. We describe a complete experimental protocol over reason-
+      ing, instruction-following, and tool-use benchmarks, including baselines, ablations, and metrics.
+      [TODO: Results to be added after experiments are run.]
+
+
+1    Introduction
+The behavior of a large language model (LLM) in deployment is governed to a remarkable degree by
+its prompt. A small change in wording, ordering, or the inclusion of a single clarifying instruction
+can move task accuracy by double-digit percentages. This sensitivity has motivated a large body of
+work on   automatic prompt optimization (APO): rather than relying on human trial-and-error, an
+algorithm searches the space of prompts to maximize task performance.
+    Despite a diversity of search strategiesreinforcement learning, evolutionary methods, beam
+search, textual gradientsthe dominant APO paradigm shares a common structure. A candidate
+prompt is evaluated by running it over a held-out set of labeled examples; the resulting errors
+are aggregated; an optimizer LLM is shown a summary of those errors and asked to produce a
+revised prompt; and the cycle repeats. We call this the      batch-and-rewrite paradigm. Representative
+instances include Automatic Prompt Engineer (APE) [1], Optimization by PROmpting (OPRO) [2],
+and Prompt Optimization with Textual Gradients (ProTeGi) [3].
+
+
+
+                                                       1
+   The batch-and-rewrite paradigm has a structural blind spot. It treats the model under optimiza-
+tion as a black-box scoring function: the only signal that ows back to the optimizer is an aggregate
+error rate, optionally accompanied by a handful of failing inputoutput pairs.      But anyone who
+has manually debugged a prompt knows that the most informative signal does not come from a
+scoreit comes from     conversing with the model. When a practitioner suspects a weakness, they do
+not run a thousand examples; they ask the model a pointed question, observe how it stumbles, ask
+a sharper follow-up, and within a few turns localize the exact misunderstanding. The prompt edit
+that follows is then surgical rather than speculative.
+   This paper asks:     can we automate that diagnostic conversation? We propose Diagnostic Di-
+alogue Optimization (DDO), in which a stronger teacher model is given (i) a description of
+what aspects of behavior matter for the task and (ii) read access to the student's current system
+prompt. The teacher then opens a multi-turn conversation with the student, whose responses are
+generated under that prompt. Through successive questions and follow-ups, the teacher builds a
+persistent diagnosis of where the student's behavior diverges from the desired behavior, attributes
+that divergence to a specic deciency in the prompt, and emits a minimal, targeted edit.        The
+conversation is discarded, the edit is applied, and a fresh diagnostic conversation begins against the
+repaired prompt. The loop terminates when the teacher can no longer surface a material weakness
+or a budget is exhausted.
+   DDO sits at the intersection of three research areas that have not previously been combined (see
+Table 1 and Section 2):
+
+
+ Conversational evaluation, which runs multi-turn LLMLLM dialogues to score agents but
+  does not act on the result.
+
+
+ Adversarial probing / red-teaming (e.g., PAIR [10], ATA [13]), which conducts live conver-
+  sations to   expose weaknesses but aims to break rather than repair.
+ Prompt optimization (ProTeGi, OPRO, MARS [6]), which repairs prompts but evaluates in
+  batch or in single-turn exchanges, never through genuine multi-turn diagnosis.
+
+
+DDO's novelty is the closed loop   converse → diagnose → repair → reset that connects live conver-
+sational diagnosis to targeted prompt repair.
+
+
+Contributions.
+1. We identify the   conversational-diagnosis gap in automatic prompt optimization: existing methods
+   either converse without repairing or repair without conversing (Section 2).
+
+
+2. We introduce    DDO, a prompt optimization framework built on a multi-turn teacherstudent
+   diagnostic loop with a persistent weakness prole and surgical prompt edits, and formalize it as
+   a partially observable optimization process (Section 4).
+
+
+3. We give a concrete instantiationagent roles, the diagnostic policy, the weakness-prole repre-
+   sentation, the prompt-edit operator, and termination criteriathat can be implemented on top
+   of standard chat APIs (Section 5).
+
+
+4. We specify a complete experimental protocol with baselines, ablations, and metrics over reasoning,
+   instruction-following, and tool-use tasks (Section 6).   [TODO: Empirical results are pending
+   and will be reported in a future revision.]
+
+
+                                                   2
+2    Related Work
+2.1 Batch-and-rewrite prompt optimization
+APE [1] generates candidate instructions with an LLM and selects among them by scoring on a
+task. OPRO [2] treats the LLM as a black-box optimizer, feeding it a trajectory of previously tried
+prompts with their scores and asking for a better one. ProTeGi [3] introduces textual gradients: it
+collects failing minibatch examples, asks an LLM to articulate   why the prompt failed (the gradient),
+and edits in the indicated direction, using beam search and bandit-style selection to manage the
+query budget. PromptAgent [4] frames optimization as planning over an error-driven state space,
+and PromptWizard [5] uses a critique-and-synthesis loop. All of these share the dening feature
+that the signal driving each edit is an aggregate over a static evaluation set; the optimizer never
+interacts with the model turn-by-turn.
+
+
+
+2.2 LLM-as-optimizer with dialogue framing
+MARS [6] is the closest prior work in spirit: it organizes prompt optimization around a Teacher
+CriticStudent triad using Socratic-style questioning, where a Teacher poses guiding questions, a
+Critic checks that the questions are genuinely Socratic, and a Student rewrites the prompt. Cru-
+cially, however, in MARS the Student     is a prompt-writing module, not the model whose behavior
+is being evaluated; each exchange is a single-turn API call without persistent dialogue state; and
+the questions concern the abstract quality of the prompt rather than the observed behavior of a
+model running under it. DDO diers on all three axes: the student is the model under optimization,
+the diagnosis is genuinely multi-turn with carried state, and the teacher reasons from the student's
+behavior rather than from the prompt text alone.
+
+2.3 Conversational and agentic evaluation
+A growing line of work evaluates LLMs and LLM agents over multi-turn dialogues rather than single
+prompts: MT-Bench-style and MultiChallenge [7] benchmarks measure conversational persistence
+and context management; ToolSandbox [8] introduces an LLM user simulator that interacts with
+a tool-use agent across turns; and surveys document the shift toward sustained, context-aware
+evaluation [9]. These methods produce scores or qualitative reports; none feeds the dialogue outcome
+back into an automatic prompt repair.
+
+
+
+2.4 Adversarial probing and red-teaming
+PAIR [10] runs an attacker LLM in a loop against a target, iteratively rening adversarial prompts
+from the target's responses; TAP [11] extends this with tree search.       MART [12] alternates an
+adversarial prompt generator with safety ne-tuning of the target across rounds.       Most relevant,
+the Agent-Testing Agent (ATA) [13] is a meta-agent that conducts adversarial conversational tests
+whose diculty adapts via judge feedback, steering subsequent conversations toward an agent's
+weakest capabilities and emitting bug reports. ATA is, in eect, the diagnostic front-half of DDO;
+but its objective is to surface and report failures, and it modies neither the prompt nor the model.
+DDO can be viewed as closing ATA's loop: routing the conversational diagnosis into a targeted
+prompt-repair operator and then re-diagnosing.
+
+
+
+
+                                                 3
+            Method                         Multi-turn       Diagnoses     Repairs   Student = model
+                                            dialogue        behavior      prompt       under test
+
+            ProTeGi / OPRO / APE               ✗             partial        ✓              ✓
+            MARS                               ✗∗              ✗            ✓              ✗
+            MT-Bench / ToolSandbox             ✓               ✓            ✗              ✓
+            PAIR / ATA                         ✓               ✓            ✗              ✓
+            DDO (ours)                         ✓               ✓            ✓              ✓
+
+Table 1: Positioning of DDO.
+                                 ∗ MARS uses a single-turn Socratic exchange between optimizer mod-
+
+ules, not a multi-turn conversation with the model under test.  ✓ /  ✗ denote presence/absence
+of the property.
+
+
+
+2.5 Knowledge distillation and student-aware teaching
+Teacherstudent framings are pervasive in distillation, where a teacher's outputs supervise a student
+model's weights [14].     Student-aware variants such as PromptKD [15] tune soft prompts so the
+teacher produces student-friendly targets, and preference-aligned teaching (e.g., ARTE) generates
+data matched to student weaknesses.          DDO borrows the            student-aware intuitionadapt to the
+specic learner's decienciesbut operates at the level of a discrete, human-readable system prompt
+and via natural-language diagnosis rather than gradient distillation, and it modies the prompt
+rather than the weights.
+
+
+
+2.6 Summary of the gap
+Table 1 positions DDO. To our knowledge, no prior method combines (a) a genuine multi-turn
+diagnostic conversation with the model under optimization, (b) a persistent cross-turn weakness
+prole, and (c) a targeted prompt-repair operator closing the loop.
+
+
+
+3    Problem Formulation
+Let Sθ denote a student LLM with xed weights, operating under a natural-language system prompt
+p drawn from the space P of admissible prompts. For a task T with input distribution D and a
+scalar quality metric Q(·), the goal of prompt optimization is
+
+
+                                p⋆ = arg max Ex∼D Q Sθ (x; p), x .
+                                                               
+                                                                                          (1)
+                                             p∈P
+
+Batch-and-rewrite methods approximate the expectation in (1) with a xed evaluation set Deval and
+                               1      P
+use the aggregate Q̂(p) =              x Q(Sθ (x; p), x) as the sole feedback signal at each step.
+                             |Deval |
+    DDO instead introduces a teacher Sϕ (typically a stronger model, ϕ ̸= θ ) and a behavioral spec-
+ication β a natural-language description of the task-relevant axes of behavior the teacher should
+probe (e.g., multi-step reasoning delity, instruction adherence, output format, refusal calibration,
+edge-case handling). The teacher's role is to recover, from interaction alone, the direction in prompt
+space along which p most underperforms with respect to β .
+
+Denition 1 (Diagnostic conversation). A diagnostic conversation of horizon H is a sequence
+c = (u1 , a1 , u2 , a2 , . . . , uH , aH ) where each teacher utterance ut = πϕ (β, p, c<t ) is generated by the
+teacher's diagnostic policy πϕ conditioned on the specication β , the student's current prompt p,
+and the conversation so far c<t ; and each student response at = Sθ (ut ; p, c<t ) is generated by the
+student under prompt p with the running conversation as context.
+
+
+
+                                                        4
+Denition 2 (Weakness prole). A weakness prole w ∈ W is a structured summary, produced
+by the teacher from a completed conversation, w = ρϕ (β, p, c), recording (i) which axes of β the
+student handled adequately, (ii) the single most salient deciency observed, (iii) the evidential turns
+supporting that diagnosis, and (iv) a condence estimate.
+
+
+Denition 3 (Prompt-repair operator). A prompt-repair operator µϕ : P × W → P maps the
+current prompt and a weakness prole to a revised prompt,          p′ = µϕ (p, w), under a minimality
+constraint: p′ should dier from p only in the manner required to address the salient deciency
+recorded in w .
+
+
+Problem 1 (Diagnostic Dialogue Optimization). Given Sθ , teacher Sϕ , specication β , initial
+prompt p0 , and a budget B (e.g., total teacherstudent exchanges), nd a sequence p0           → p1 →
+· · · → pK with pk+1 = µϕ (pk , ρϕ (β, pk , ck )), where ck is a diagnostic conversation against pk , such
+                                        P
+that Q̂(pK ) is maximized subject to        k |ck | ≤ B .
+
+
+A partially observable view.         DDO is naturally cast as a partially observable decision process.
+The hidden state is the true behavioral prole of Sθ under p, which is never directly observable.
+Each teacher utterance is an   information-gathering action that yields an observation (the student's
+response), narrowing the teacher's posterior over where the prompt is decient. The repair operator
+is a   control action that changes the promptand hence the hidden behavioral stateafter which
+the posterior is reset and re-estimated. This framing claries why a persistent within-conversation
+prole matters: the value of the t-th question depends on what the rst t − 1 answers have already
+revealed, exactly as in optimal experimental design.
+
+
+
+4       Method: Diagnostic Dialogue Optimization
+DDO instantiates the formulation above with four cooperating components and an outer control
+loop.
+
+
+
+4.1 Components
+Teacher (Sϕ ). A capable model carrying the behavioral specication β in its own system prompt.
+It plays two roles:   interrogator (generating ut via πϕ ) and diagnostician (producing w via ρϕ and
+the edit via µϕ ). These can be the same underlying model with dierent instructions, or separated
+for modularity.
+
+
+Student (Sθ ). The model under optimization, run with the current candidate prompt pk as its
+system prompt and the live conversation as context. The student is never told it is being evaluated,
+to avoid eliciting unrepresentative test-taking behavior.
+
+
+Verier (optional). A lightweight scorer Q̂ over a small validation set, queried only between outer
+iterations to decide whether to accept a repair (a guardrail against regressions; see Section 5).
+
+
+Memory. A persistent store holding the current prompt, the running conversation c<t within an
+iteration, and the history of accepted weakness proles and edits across iterations (used to avoid
+re-diagnosing already-xed issues and to detect oscillation).
+
+
+
+
+                                                    5
+Algorithm 1 Diagnostic Dialogue Optimization (DDO)
+Require: student Sθ , teacher Sϕ , spec β , initial prompt p0 , horizon H , budget B , patience m
+ 1: p ← p0 ; best ← p0 ; hist ← ∅; spent ← 0; stall ← 0
+ 2: while spent < B and stall < m do
+ 3:    c ← ()                                        ▷ fresh conversation against current prompt
+ 4:    for t = 1 to H do
+ 5:        ut ← πϕ (β, p, c, hist)                                 ▷ adaptive diagnostic question
+ 6:        at ← Sθ (ut ; p, c)                                 ▷ student answers under prompt p
+ 7:        c ← c ∥ (ut , at ); spent ← spent +1
+ 8:        if πϕ signals diagnosis complete then break
+ 9:        end if
+10:    end for
+11:    w ← ρϕ (β, p, c)                                                ▷ compile weakness prole
+12:    if w.condence < τ or w reports no material weakness then
+13:        stall ← stall +1; continue
+14:    end if
+15:    p′ ← µϕ (p, w)                                                     ▷ minimal targeted edit
+16:    if verier present and Q̂(p′ ) < Q̂(p) − ϵ then
+17:        stall ← stall +1                                                ▷ reject regression, keep p
+18:    else
+19:        p ← p′ ; hist ← hist ∪ {w, di(p, p′ )}; stall ← 0
+20:        if verier present and Q̂(p) > Q̂(best) then best ← p
+21:        end if
+22:    end if
+23: end while
+24: return verier present ? best : p
+
+
+
+4.2 The DDO loop
+Algorithm 1 gives the procedure. Within an outer iteration, the teacher conducts a bounded diag-
+nostic conversation, choosing each question adaptively from the answers so far and steering toward
+whichever axis of β looks weakest.     It then compiles a weakness prole and proposes a minimal
+edit. An optional verier gates the edit on a small validation set to prevent regressions; accepted
+edits update the prompt, and the conversation is discarded so the next iteration probes the   repaired
+prompt from scratch. The loop halts when no material weakness is found, improvements stall, or
+the budget is exhausted.
+
+
+
+4.3 Why diagnosis beats aggregate error
+Batch methods compress all behavioral information into a scalar (or a few sampled failures) before
+the optimizer ever reasons about the prompt. DDO preserves the      causal trace : because the teacher
+chose each question and saw each answer, the weakness prole is grounded in a specic, reproducible
+interaction rather than a post-hoc guess about why an aggregate score is low. Two consequences
+follow.   First, the edit can be   minimal and targeted it names the exact behavior to change
+reducing the prompt bloat and over-tting that accompany repeated whole-prompt rewrites. Second,
+the method is   label-light : a diagnostic conversation can reveal a reasoning or formatting deciency
+without a labeled dataset for that deciency, because the teacher supplies the judgment online. We
+
+
+
+
+                                                  6
+make these claims precise as testable hypotheses in Section 6.
+
+
+
+5    Instantiation
+We describe concrete design choices used in our reference implementation.        All components are
+realizable with standard chat-completion APIs; no model weights are modied.
+
+
+
+5.1 Behavioral specication β
+β is a short rubric enumerating the axes the teacher should probe, with one line each, e.g.: stepwise
+reasoning (does the student decompose before answering?), instruction adherence (does it honor
+explicit constraints?), format (does output match the required schema?), robustness (does it handle
+under-specied or adversarial phrasing?), and calibration (does it hedge or refuse appropriately?).
+β encodes the teacher's prior over what matters and is the only task-specic human input besides
+the initial prompt.
+
+
+
+5.2 Diagnostic policy πϕ
+The teacher is instructed to (i) begin broad, sampling one question per axis of       β ; (ii) when a
+response shows weakness,     drill down with follow-ups on that axis before moving on; (iii) avoid
+leading questions that reveal the answer; and (iv) emit a special token when it has localized a single
+dominant deciency or exhausted the horizon H . Carrying c<t in context is what makes the policy
+adaptive: the t-th question is conditioned on all prior answers.
+
+
+
+5.3 Weakness prole ρϕ and edit µϕ
+ρϕ outputs a structured object (we use JSON) with elds axes_ok, salient_deficiency, evidence_turns,
+hypothesized_prompt_cause, and confidence. µϕ is instructed to produce the smallest prompt
+change that plausibly xes salient_deficiency, preferring to add a targeted instruction or a single
+clarifying example over rewriting existing text, and to return a unied di alongside the new prompt
+so edits are auditable and reversible.
+
+
+
+5.4 Guardrails
+                                         verier on a small validation set rejects edits that regress
+Three guardrails stabilize the loop. (1) A
+aggregate quality, converting DDO into a hill-climber with diagnostic proposals. (2) A history check
+forbids re-xing an axis already marked resolved unless new evidence contradicts it, preventing
+oscillation. (3) A   minimality penalty discourages the prompt from growing without bound across
+iterations.
+
+
+
+5.5 Cost accounting
+The dominant cost is teacherstudent exchanges. With horizon H and K outer iterations, DDO
+uses O(KH) student calls for diagnosis plus optional verier calls; this is directly comparable to the
+minibatch evaluations consumed by ProTeGi/OPRO and is the quantity we hold xed in budget-
+matched comparisons (Section 6).
+
+
+
+
+                                                  7
+6     Experimental Protocol
+This section species the planned evaluation. Numerical results are placeholders to be lled after the
+experiments are run.
+
+6.1 Hypotheses
+H1 (Quality). At a matched query budget, DDO reaches higher task quality than batch-and-
+rewrite baselines.
+
+
+H2 (Eciency). DDO attains a given quality level with fewer student queries, because diagnostic
+questions are more informative per call than random minibatch evaluations.
+
+
+H3 (Label eciency). DDO's advantage grows as labeled data shrinks, because the teacher sup-
+plies online judgments.
+
+
+H4 (Edit locality). DDO produces shorter, more interpretable prompt dis than whole-prompt
+rewriters at equal quality.
+
+
+
+6.2 Tasks and datasets
+We propose three families: (i)   reasoning BIG-Bench Hard subtasks and GSM8K-style arithmetic
+word problems; (ii)   instruction following a multi-constraint following suite (e.g., IFEval-style con-
+straints); (iii) tool use / agentic a ToolSandbox-style environment requiring correct multi-turn
+tool calls.   [TODO: Finalize the exact dataset versions, splits, and licenses.]
+
+6.3 Models
+Student models spanning a capability range (e.g., a small open-weight model and a mid-size model)
+optimized under each method; a single stronger teacher held xed across methods to ensure fair
+comparison.     [TODO: Specify exact model identiers and versions.]
+
+6.4 Baselines
+(1) Zero-shot single-rewrite (ask the teacher once to improve the prompt); (2) APE; (3) OPRO; (4)
+ProTeGi; (5) MARS. All run at the same total query budget B as DDO.
+
+
+
+6.5 Ablations
+(A) No memory : reset the within-conversation prole each turn (tests the value of persistent diag-
+nosis). (B)   Single-turn : set H = 1 (collapses DDO toward MARS-style exchange). (C) No verier :
+remove the regression gate. (D) No minimality : allow whole-prompt rewrites in µϕ . (E) Spec
+sensitivity : vary the axes in β .
+
+6.6 Metrics
+Task quality Q̂ on held-out test sets; queries-to-target (for H2); quality vs. label-budget curves (for
+H3); prompt edit distance and nal prompt length (for H4); and qualitative analysis of representative
+diagnostic transcripts and the edits they induced.
+
+
+
+
+                                                   8
+                         Method              Reasoning      Instr.-follow   Tool use
+
+                         Zero-shot rewrite        .-           .-           .-
+                         APE                      .-           .-           .-
+                         OPRO                     .-           .-           .-
+                         ProTeGi                  .-           .-           .-
+                         MARS                     .-           .-           .-
+                         DDO (ours)               .-           .-           .-
+
+       [TODO: Main results at matched query budget. Fill with held-out accuracy /
+Table 2:
+task metric once experiments are complete.]
+
+6.7 Results
+[TODO: Add ablation table, queries-to-target plot, label-eciency curves, edit-locality
+statistics, and qualitative transcript analysis.]
+
+7    Discussion
+Relation to optimal experimental design.                DDO's inner loop is a form of active information
+gathering: each question is chosen to maximally reduce uncertainty about where the prompt is de-
+cient. This suggests principled extensionse.g., explicit value-of-information criteria for question
+selection, or Thompson-sampling over axes of β .
+
+
+When DDO should and should not help.                    We expect the largest gains where weaknesses are
+behavioral and localizable a missing instruction, an unhandled edge case, an ambiguous format
+and conversation can expose them quickly.         We expect smaller gains where the bottleneck is the
+student's raw capability (no prompt xes it) or where the task is so narrow that a handful of labeled
+examples already pinpoint the failure, neutralizing the conversational advantage.
+
+
+Teacher dependence.        DDO's diagnoses are only as good as the teacher's judgment. A weak or
+miscalibrated teacher may hallucinate weaknesses or propose harmful edits; the verier guardrail
+bounds the downside but does not eliminate it. Studying robustness to teacher quality is part of
+the planned ablations.
+
+
+
+8    Limitations
+DDO assumes API access to both models and incurs teacher cost per diagnostic turn. The method
+optimizes a discrete system prompt and does not modify weights, so it cannot overcome funda-
+mental capability gaps. Diagnoses are natural-language judgments and inherit the teacher's biases.
+Finally, the empirical claims in this draft are   hypotheses ; the results tables are placeholders pending
+experiments.   [TODO: Update this section once results are available.]
+
+9    Conclusion
+We introduced Diagnostic Dialogue Optimization, which replaces the batch-and-rewrite loop of auto-
+matic prompt optimization with a multi-turn teacherstudent diagnostic conversation that localizes
+a prompt's weakness and repairs it with a minimal, targeted edit before re-diagnosing from scratch.
+
+
+
+                                                        9
+DDO unies the diagnostic strength of conversational red-teaming with the repair capability of
+prompt optimizers, occupying a gap left open by both. We provided a formalization, an algorithm,
+a concrete instantiation, and a full experimental protocol; completing the empirical evaluation is
+the immediate next step.
+
+
+
+Reproducibility Statement
+[TODO: On acceptance/release, provide a code repository, the exact prompts for β , πϕ ,
+ρϕ , and µϕ , model versions, dataset splits, and random seeds. Release representative
+diagnostic transcripts and the induced prompt dis.]
+
+Ethics Statement
+DDO is a capability-improvement method for prompts and shares the dual-use considerations of
+prompt optimization and automated red-teaming generally: the same diagnostic loop that repairs a
+benign prompt could in principle be aimed at probing safety guardrails. We intend the method for
+improving task reliability and recommend that practitioners pair it with safety evaluation rather
+than using the diagnostic component in isolation to weaken safeguards.
+
+
+
+References
+ [1] Y. Zhou, A. I. Muresanu, Z. Han, K. Paster, S. Pitis, H. Chan, and J. Ba. Large Language Models Are
+       Human-Level Prompt Engineers. In      ICLR, 2023.
+ [2] C. Yang, X. Wang, Y. Lu, H. Liu, Q. V. Le, D. Zhou, and X. Chen.               Large Language Models as
+       Optimizers (OPRO). In     ICLR, 2024.
+ [3] R. Pryzant, D. Iter, J. Li, Y. T. Lee, C. Zhu, and M. Zeng.         Automatic Prompt Optimization with
+       Gradient Descent and Beam Search (ProTeGi). In     EMNLP, 2023.
+ [4] X. Wang, C. Li, Z. Wang, F. Bai, H. Luo, J. Zhang, N. Jojic, E. Xing, and Z. Hu.           PromptAgent:
+       Strategic Planning with Language Models Enables Expert-level Prompt Optimization. In      ICLR, 2024.
+ [5] E. Agarwal, J. Singh, V. Dani, R. Magazine, T. Ganu, and A. Nambi. PromptWizard: Task-Aware
+       Prompt Optimization Framework.      arXiv preprint arXiv:2405.18369, 2024.
+ [6] J. Zhang, Z. Wang, H. Zhu, J. Liu, Q. Lin, and E. Cambria. MARS: A Multi-Agent Framework Incor-
+       porating Socratic Guidance for Automated Prompt Optimization. In        AAAI, 2026. arXiv:2503.16874.
+ [7] K. Deshpande, V. Sirdeshmukh, J. B. Mols, et al. MultiChallenge: A Realistic Multi-Turn Conversation
+       Evaluation Benchmark Challenging to Frontier LLMs. In        Findings of ACL, 2025.
+ [8] J. Lu, et al. ToolSandbox: A Stateful, Conversational, Interactive Evaluation Benchmark for LLM Tool
+       Use Capabilities.   arXiv preprint arXiv:2408.04682, 2024.
+ [9]   [TODO: Author(s)]. Beyond Single-Turn: A Survey on Multi-Turn Interactions with Large Language
+       Models.   arXiv preprint arXiv:2504.04717, 2025.
+[10] P. Chao, A. Robey, E. Dobriban, H. Hassani, G. J. Pappas, and E. Wong.            Jailbreaking Black Box
+       Large Language Models in Twenty Queries (PAIR).      arXiv preprint arXiv:2310.08419, 2023.
+[11] A. Mehrotra, M. Zampetakis, P. Kassianik, B. Nelson, H. Anderson, Y. Singer, and A. Karbasi. Tree
+       of Attacks: Jailbreaking Black-Box LLMs Automatically (TAP). In       NeurIPS, 2024.
+
+                                                       10
+[12] S. Ge, C. Zhou, R. Hou, M. Khabsa, Y.-C. Wang, Q. Wang, J. Han, and Y. Mao. MART: Improving
+    LLM Safety with Multi-round Automatic Red-Teaming.       arXiv preprint arXiv:2311.07689, 2023.
+[13] K. Mrini, et al. Agent-Testing Agent: A Meta-Agent for Automated Testing and Evaluation of Conver-
+    sational AI Agents.   arXiv preprint arXiv:2508.17393, 2025.
+[14] J. Gou, B. Yu, S. J. Maybank, and D. Tao. Knowledge Distillation: A Survey.   International Journal
+    of Computer Vision, 129:17891819, 2021.
+[15] G. Kim, et al. PromptKD: Distilling Student-Friendly Knowledge for Generative Language Models via
+    Prompt Tuning. In     Findings of EMNLP, 2024.
+
+
+
+
+                                                     11
+
