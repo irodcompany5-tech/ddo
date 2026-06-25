@@ -50,6 +50,11 @@ export function buildRunOptions(payload = {}) {
     ),
     validationLimit: clampNumber(payload.validationLimit, 1, 50, Number(env.DDO_VALIDATION_LIMIT) || 6),
     verifierEnabled: asBoolean(payload.verifierEnabled, true),
+    externalEvaluator: typeof payload.evaluatePrompt === 'function'
+      ? payload.evaluatePrompt
+      : typeof payload.externalEvaluator === 'function'
+        ? payload.externalEvaluator
+        : null,
     minimalityMode: payload.minimalityMode || 'warn',
     maxPromptGrowthRatio: clampNumber(payload.maxPromptGrowthRatio, 0, 5, 0.35),
     temperature: clampNumber(payload.temperature, 0, 2, 0.2),
@@ -484,6 +489,33 @@ function normalizeRepair(data, beforePrompt) {
 async function maybeVerifyRepair({ client, options, prompt, candidatePrompt, scoreCache, callUsage }) {
   if (!options.verifierEnabled || !options.dataset.length) return null;
 
+  if (options.externalEvaluator) {
+    const before = normalizeEvaluatorSummary(
+      await options.externalEvaluator(prompt, {
+        dataset: options.dataset,
+        behaviorSpec: options.behaviorSpec,
+        phase: 'before',
+        options
+      })
+    );
+    const after = normalizeEvaluatorSummary(
+      await options.externalEvaluator(candidatePrompt, {
+        dataset: options.dataset,
+        behaviorSpec: options.behaviorSpec,
+        phase: 'after',
+        options
+      })
+    );
+
+    return {
+      source: 'external',
+      before,
+      after,
+      delta: after.average - before.average,
+      epsilon: options.regressionEpsilon
+    };
+  }
+
   const before = await scorePrompt({
     client,
     options,
@@ -500,10 +532,33 @@ async function maybeVerifyRepair({ client, options, prompt, candidatePrompt, sco
   });
 
   return {
+    source: 'llm_verifier',
     before,
     after,
     delta: after.average - before.average,
     epsilon: options.regressionEpsilon
+  };
+}
+
+export function normalizeEvaluatorSummary(value) {
+  if (typeof value === 'number') {
+    return {
+      average: clampNumber(value, 0, 1, 0),
+      count: 1,
+      passRate: value >= 0.5 ? 1 : 0,
+      results: []
+    };
+  }
+
+  const average = clampNumber(value?.average ?? value?.score, 0, 1, 0);
+  const results = Array.isArray(value?.results) ? value.results : [];
+  const count = Number.isFinite(Number(value?.count)) ? Number(value.count) : results.length;
+
+  return {
+    average,
+    count,
+    passRate: clampNumber(value?.passRate, 0, 1, average >= 0.5 ? 1 : 0),
+    results
   };
 }
 
@@ -589,7 +644,7 @@ function stopReason({ spent, budget, stall, patience }) {
 }
 
 function publicOptions(options) {
-  const { apiKey, ...rest } = options;
+  const { apiKey, externalEvaluator, ...rest } = options;
   return {
     ...rest,
     apiKeySource: apiKey ? 'ui' : process.env.OPENAI_API_KEY ? 'env' : 'missing'
