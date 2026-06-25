@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DDO Prompt Optimizer</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Diagnostic Dialogue Optimization</h1>
+        <div class="subline">
+          <span id="keyStatus" class="pill">API key</span>
+          <a href="/paper/ddo_paper.pdf" target="_blank" rel="noreferrer">Paper PDF</a>
+          <a href="/paper/ddo_paper.txt" target="_blank" rel="noreferrer">Extracted text</a>
+        </div>
+      </div>
+      <div class="run-actions">
+        <button id="stopRun" class="ghost" type="button" disabled>Stop</button>
+        <button id="startRun" type="button">Start DDO</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="panel config-panel">
+        <div class="panel-head">
+          <h2>Run Setup</h2>
+          <span id="runState" class="state">idle</span>
+        </div>
+
+        <label>
+          UI API key
+          <input id="apiKey" type="password" autocomplete="off" placeholder="Uses .env when empty">
+        </label>
+
+        <label>
+          API mode
+          <select id="apiMode">
+            <option value="responses">Responses API</option>
+            <option value="chat">Chat Completions</option>
+          </select>
+        </label>
+
+        <label>
+          Base URL
+          <input id="baseURL" type="url" placeholder="OpenAI default">
+        </label>
+
+        <div class="two-col">
+          <label>
+            Teacher model
+            <input id="teacherModel" type="text">
+          </label>
+          <label>
+            Student model
+            <input id="studentModel" type="text">
+          </label>
+        </div>
+
+        <label>
+          Verifier model
+          <input id="verifierModel" type="text">
+        </label>
+
+        <label>
+          Behavior specification
+          <textarea id="behaviorSpec" rows="7"></textarea>
+        </label>
+
+        <label>
+          Initial student system prompt
+          <textarea id="initialPrompt" rows="9"></textarea>
+        </label>
+
+        <div class="param-grid">
+          <label>
+            Horizon
+            <input id="horizon" type="number" min="1" max="20">
+          </label>
+          <label>
+            Budget
+            <input id="budget" type="number" min="1" max="200">
+          </label>
+          <label>
+            Patience
+            <input id="patience" type="number" min="1" max="20">
+          </label>
+          <label>
+            Tau
+            <input id="confidenceThreshold" type="number" min="0" max="1" step="0.01">
+          </label>
+          <label>
+            Epsilon
+            <input id="regressionEpsilon" type="number" min="0" max="1" step="0.01">
+          </label>
+          <label>
+            Validation
+            <input id="validationLimit" type="number" min="1" max="50">
+          </label>
+        </div>
+
+        <label class="checkline">
+          <input id="verifierEnabled" type="checkbox" checked>
+          <span>Verifier gate</span>
+        </label>
+
+        <label>
+          Minimality
+          <select id="minimalityMode">
+            <option value="warn">Warn</option>
+            <option value="reject">Reject oversized edits</option>
+          </select>
+        </label>
+      </aside>
+
+      <section class="main-stack">
+        <nav class="tabs" aria-label="Workspace">
+          <button class="tab active" data-tab="dataset" type="button">Dataset</button>
+          <button class="tab" data-tab="run" type="button">Run</button>
+          <button class="tab" data-tab="results" type="button">Results</button>
+        </nav>
+
+        <section id="datasetTab" class="panel tab-panel">
+          <div class="panel-head">
+            <h2>Dataset</h2>
+            <div class="toolbar">
+              <input id="datasetFile" type="file" accept=".json,.jsonl,.csv,.txt,text/plain,application/json">
+              <button id="loadDemo" class="ghost" type="button">Demo</button>
+              <button id="clearDataset" class="ghost" type="button">Clear</button>
+            </div>
+          </div>
+
+          <div class="example-editor">
+            <label>
+              Input
+              <textarea id="manualInput" rows="4"></textarea>
+            </label>
+            <label>
+              Expected
+              <textarea id="manualExpected" rows="4"></textarea>
+            </label>
+            <label>
+              Notes
+              <textarea id="manualNotes" rows="4"></textarea>
+            </label>
+            <button id="addExample" type="button">Add Example</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Input</th>
+                  <th>Expected</th>
+                  <th>Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="datasetRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="runTab" class="panel tab-panel hidden">
+          <div class="metrics">
+            <div>
+              <span>Spent</span>
+              <strong id="spentMetric">0</strong>
+            </div>
+            <div>
+              <span>Iteration</span>
+              <strong id="iterationMetric">0</strong>
+            </div>
+            <div>
+              <span>Score</span>
+              <strong id="scoreMetric">--</strong>
+            </div>
+            <div>
+              <span>Stop</span>
+              <strong id="stopMetric">--</strong>
+            </div>
+          </div>
+          <div id="eventLog" class="event-log" aria-live="polite"></div>
+        </section>
+
+        <section id="resultsTab" class="panel tab-panel hidden">
+          <div class="panel-head">
+            <h2>Optimized Prompt</h2>
+            <div class="toolbar">
+              <button id="exportJson" class="ghost" type="button" disabled>Export JSON</button>
+              <button id="exportPrompt" class="ghost" type="button" disabled>Export Prompt</button>
+            </div>
+          </div>
+          <textarea id="finalPrompt" class="final-prompt" rows="12" readonly></textarea>
+          <h3>Accepted Edits</h3>
+          <div id="historyList" class="history-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
