@@ -17,6 +17,10 @@ check('paper PDF copied', () => fs.existsSync(path.join(root, 'ddo_paper.pdf')))
 check('paper text extracted', () => fs.existsSync(path.join(root, 'ddo_paper.txt')));
 check('.env.example exists', () => fs.existsSync(path.join(root, '.env.example')));
 check('public UI exists', () => fs.existsSync(path.join(root, 'public', 'index.html')));
+check('JavaScript library entrypoint exists', () => fs.existsSync(path.join(root, 'src', 'index.js')));
+check('JavaScript CLI exists', () => fs.existsSync(path.join(root, 'bin', 'ddo.js')));
+check('Python pyproject.toml exists', () => fs.existsSync(path.join(root, 'pyproject.toml')));
+check('Python package exists', () => fs.existsSync(path.join(root, 'ddo_optimizer', '__init__.py')));
 
 const failed = checks.filter((item) => !item.ok);
 

@@ -4,6 +4,12 @@
 node_modules/
 run-results/
 coverage/
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.py[cod]
+.pytest_cache/
 .DS_Store
 .git-real/
 *.log

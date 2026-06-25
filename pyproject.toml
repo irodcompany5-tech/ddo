@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ddo-prompt-optimizer"
+version = "0.1.0"
+description = "Diagnostic Dialogue Optimization framework for prompt repair."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Irod Company", email = "irodcompany5-tech@users.noreply.github.com" }
+]
+keywords = [
+  "prompt-optimization",
+  "llm-evaluation",
+  "openai",
+  "deepeval",
+  "diagnostic-dialogue-optimization"
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules"
+]
+dependencies = [
+  "openai>=1.0.0"
+]
+
+[project.optional-dependencies]
+deepeval = ["deepeval>=4.0.0"]
+dev = ["build>=1.2.0", "twine>=5.0.0"]
+
+[project.scripts]
+ddo-optimize = "ddo_optimizer.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/irodcompany5-tech/ddo"
+Issues = "https://github.com/irodcompany5-tech/ddo/issues"
+Source = "https://github.com/irodcompany5-tech/ddo"
+
+[tool.setuptools.packages.find]
+include = ["ddo_optimizer*"]
