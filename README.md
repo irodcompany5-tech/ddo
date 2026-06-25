@@ -2,7 +2,7 @@
 
 Diagnostic Dialogue Optimization (DDO) is a prompt optimization framework based on the paper copied into this repository. A stronger teacher model conducts a multi-turn diagnostic conversation with a student model, compiles a structured weakness profile, proposes a minimal prompt repair, optionally verifies the edit on a small dataset, then resets and repeats.
 
-This repository includes the paper, a full-stack OpenAI SDK implementation, a browser UI, Codespaces support, CI, tests, and example data.
+This repository includes the paper, a full-stack OpenAI SDK implementation, a browser UI, Codespaces support, tests, a CI workflow template, and example data.
 
 ## Quick Start
 
@@ -41,6 +41,7 @@ The devcontainer installs dependencies, runs `npm run doctor`, and forwards port
 - [examples/dataset.jsonl](examples/dataset.jsonl): sample verifier dataset.
 - [docs/architecture.md](docs/architecture.md): implementation architecture.
 - [docs/dataset-format.md](docs/dataset-format.md): supported dataset formats.
+- [docs/github-actions-ci.yml](docs/github-actions-ci.yml): GitHub Actions CI template.
 
 ## Configuration
 
@@ -116,6 +117,10 @@ npm start        # same server entrypoint for production-like runs
 Do not commit `.env`, API keys, GitHub tokens, private datasets, or generated logs. If a token is pasted into chat, an issue, or a terminal log, revoke it and create a new one.
 
 See [SECURITY.md](SECURITY.md).
+
+## CI
+
+The CI workflow template is stored at [docs/github-actions-ci.yml](docs/github-actions-ci.yml). To activate it, copy it to `.github/workflows/ci.yml` using a GitHub token that has the `workflow` scope.
 
 ## License
 
