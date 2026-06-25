@@ -1,53 +1,102 @@
 # DDO Documentation
 
-This is the practical documentation hub for Diagnostic Dialogue Optimization (DDO). Start with the guide that matches how you want to use the project.
+This is the documentation hub for Diagnostic Dialogue Optimization (DDO). It is organized by how people actually adopt the project: try it in the UI, run a notebook, install a library, connect an evaluator, then productionize the workflow.
 
-## Start Here
+## Choose Your Path
 
-| Goal | Guide |
-| --- | --- |
-| Install and run the web UI | [Quickstart](quickstart.md) |
-| Use DDO from Python with `pip` | [Python / pip](python.md) |
-| Use DDO from Node.js with `npm` | [JavaScript / npm](javascript.md) |
-| Use DDO with DeepEval metrics | [DeepEval](deepeval.md) |
-| Run a clickable notebook walkthrough | [Jupyter notebook](jupyter-notebook.md) |
-| Run DDO from a terminal | [CLI](cli.md) |
-| Prepare datasets | [Dataset format](dataset-format.md) |
-| Plug in your own evaluation platform | [Evaluation adapters](evaluation-adapters.md) |
-| Configure models, keys, and budgets | [Configuration](configuration.md) |
-| Follow end-to-end examples | [Usage scenarios](scenarios.md) |
-| Fix common issues | [Troubleshooting](troubleshooting.md) |
+| You want to... | Read this | What you get |
+| --- | --- | --- |
+| Try DDO in a browser | [Quickstart](quickstart.md) | Local UI, demo dataset, first optimization run |
+| Run a visible walkthrough | [Jupyter notebook](jupyter-notebook.md) | Notebook with saved outputs and optional live cells |
+| Use Python | [Python / pip](python.md) | `DDOOptimizer`, custom clients, Python CLI |
+| Use Node.js | [JavaScript / npm](javascript.md) | ESM import, npm CLI, evaluator callback |
+| Use DeepEval | [DeepEval](deepeval.md) | Goldens, metrics, model callback adapter |
+| Use another eval platform | [Evaluation adapters](evaluation-adapters.md) | Generic evaluator contract for any framework |
+| Prepare data | [Dataset format](dataset-format.md) | JSON, JSONL, CSV, text, aliases, tips |
+| Tune settings | [Configuration](configuration.md) | API keys, model IDs, budgets, verifier settings |
+| Run terminal workflows | [CLI](cli.md) | Python and npm command examples |
+| Follow complete examples | [Usage scenarios](scenarios.md) | Python, Node, DeepEval, CI scenarios |
+| Fix setup issues | [Troubleshooting](troubleshooting.md) | API keys, imports, ports, package tokens |
+| Understand internals | [Architecture](architecture.md) | Runtime flow, components, extension points |
+| Publish releases | [Publishing](publishing.md) | npm, PyPI, tokens, release checks |
 
 ## What DDO Does
 
-DDO improves a system prompt through a repeated loop:
+DDO improves a system prompt through a repeatable diagnostic loop:
 
-1. A teacher model asks diagnostic questions.
+1. A teacher model asks targeted questions.
 2. A student model answers under the current prompt.
-3. The teacher identifies one concrete weakness.
-4. DDO proposes a small prompt repair.
-5. An optional evaluator verifies that the repair does not regress.
-6. The next round starts fresh with the repaired prompt.
+3. The teacher writes a structured weakness profile.
+4. DDO proposes a minimal prompt repair.
+5. A verifier or external evaluator scores before and after prompts.
+6. Accepted repairs update the prompt; rejected repairs are recorded.
+7. The next iteration starts with a fresh diagnostic conversation.
 
-The result is an optimized prompt, an audit trail of accepted edits, and the diagnostic evidence behind each edit.
+The output is an optimized prompt plus an audit trail: diagnostic turns, weakness profiles, repair summaries, verifier scores, usage metadata, and stop reason.
 
-## Pick The Right Integration
+## First Run Checklist
 
-- Use the **web UI** when you want to experiment visually.
-- Use **Python / pip** when your evaluation stack is Python-first.
-- Use **JavaScript / npm** when your product or evaluation harness is Node.js.
-- Use **DeepEval** when you already evaluate with DeepEval metrics and goldens.
-- Use the **Jupyter notebook** when you want a visual, step-by-step walkthrough with saved outputs.
-- Use the **external evaluator contract** when you have your own platform, CI eval job, LangSmith/Ragas-like harness, or internal scorer.
+Use this when helping a new teammate get from zero to first result.
+
+```bash
+git clone https://github.com/irodcompany5-tech/ddo.git
+cd ddo
+npm install
+cp .env.example .env
+npm run doctor
+npm run dev
+```
+
+Open `http://127.0.0.1:5174`, load the demo dataset, set `Budget = 3`, and run DDO.
+
+No API key yet? Open [the notebook](../notebooks/ddo_quickstart.ipynb). Its first workflow runs offline with a fake model client.
 
 ## Minimal Dataset
 
-You can start with three examples:
+Start with a small JSONL file:
 
 ```jsonl
-{"id":"format-1","input":"Return JSON with keys answer and confidence: 2+2?","expected":"{\"answer\":4,\"confidence\":\"high\"}","notes":"Must return valid JSON only."}
-{"id":"instruction-1","input":"Give exactly three bullet points about safe migrations. Each starts with a verb.","expected":"Three bullets only, each starts with a verb."}
-{"id":"calibration-1","input":"What will my cloud bill be next month?","expected":"Ask for missing usage and pricing details."}
+{"id":"format-1","input":"Return JSON with keys answer and confidence: 2+2?","expected":"{\"answer\":4,\"confidence\":\"high\"}","notes":"Must return valid JSON only.","tags":["format","math"]}
+{"id":"instruction-1","input":"Give exactly three bullet points about safe migrations. Each starts with a verb.","expected":"Three bullets only, each starts with a verb.","tags":["instruction-following"]}
+{"id":"calibration-1","input":"What will my cloud bill be next month?","expected":"Ask for missing usage and pricing details.","tags":["calibration"]}
 ```
 
-Save that as `dataset.jsonl`, then follow the guide for your framework.
+Save it as `dataset.jsonl`, then follow the guide for your framework.
+
+## Integration Pattern
+
+Most production integrations use this shape:
+
+1. Keep your current app or model gateway.
+2. Give DDO an initial prompt and representative dataset.
+3. Let DDO propose prompt repairs.
+4. Score the original and candidate prompt with your evaluator.
+5. Accept only candidates that do not regress beyond `regression_epsilon`.
+6. Review the accepted diff before shipping.
+
+The generic evaluator guides are [Evaluation adapters](evaluation-adapters.md) and [Integration guide](integrations.md).
+
+## Recommended First Settings
+
+```text
+Horizon: 2
+Budget: 3
+Patience: 1
+Validation limit: 2
+Verifier gate: on
+```
+
+Increase budget and validation size only after the first run produces useful, targeted repairs.
+
+## Maintainer Checks
+
+Run these before committing documentation or release changes:
+
+```bash
+npm run doctor
+npm run docs:check
+npm run check
+npm test
+```
+
+`npm run docs:check` validates local Markdown links and notebook JSON so the GitHub docs stay clickable.

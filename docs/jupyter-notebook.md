@@ -10,27 +10,32 @@ Open:
 
 GitHub renders the saved outputs, so readers can inspect the full DDO flow before running anything locally.
 
-## 2. Run It From A Fresh Python Project
+## 2. Run It From This Repository
+
+```bash
+git clone https://github.com/irodcompany5-tech/ddo.git
+cd ddo
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[notebook]"
+python -m notebook notebooks/ddo_quickstart.ipynb
+```
+
+## 3. Run It From Another Project
+
+Download the notebook, then open it with the package from PyPI:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install ddo-prompt-optimizer notebook ipykernel
-python -m notebook notebooks/ddo_quickstart.ipynb
+curl -L -o ddo_quickstart.ipynb https://raw.githubusercontent.com/irodcompany5-tech/ddo/main/notebooks/ddo_quickstart.ipynb
+python -m notebook ddo_quickstart.ipynb
 ```
 
-If you cloned this repository and want the local source version:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e ".[notebook,deepeval]"
-python -m notebook notebooks/ddo_quickstart.ipynb
-```
-
-## 3. Run It In Codespaces
+## 4. Run It In Codespaces
 
 1. Open `https://codespaces.new/irodcompany5-tech/ddo`.
 2. Wait for dependencies to install.
@@ -40,7 +45,7 @@ python -m notebook notebooks/ddo_quickstart.ipynb
 
 The first workflow uses a fake model client and a simple evaluator, so it runs without an API key.
 
-## 4. Run With OpenAI Models
+## 5. Run With OpenAI Models
 
 Set your key before opening Jupyter:
 
@@ -64,7 +69,7 @@ Verifier: on
 
 These settings keep the run small while still showing the diagnostic loop.
 
-## 5. Run With DeepEval
+## 6. Run With DeepEval
 
 Install the optional DeepEval dependency:
 
@@ -80,7 +85,7 @@ from ddo_optimizer.adapters.deepeval import optimize_with_deepeval
 
 Provide your own `model_callback`, goldens, and metrics. DDO will use DeepEval as the verifier gate.
 
-## 6. What The Notebook Shows
+## 7. What The Notebook Shows
 
 - Create a small dataset.
 - Run DDO offline with a fake diagnostic model.
@@ -90,7 +95,7 @@ Provide your own `model_callback`, goldens, and metrics. DDO will use DeepEval a
 - Switch to a real OpenAI run.
 - Connect the same flow to DeepEval.
 
-## 7. Common Issues
+## 8. Common Issues
 
 If `ddo_optimizer` cannot be imported, install the package in the same kernel:
 

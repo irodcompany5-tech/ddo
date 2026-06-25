@@ -17,6 +17,7 @@
     "examples/",
     "public/",
     "src/",
+    "notebooks/",
     "ddo_paper.pdf",
     "ddo_paper.txt",
     "LICENSE",
@@ -26,7 +27,8 @@
     "access": "public"
   },
   "scripts": {
-    "check": "node --check src/server.js && node --check src/ddoEngine.js && node --check src/openaiAdapter.js && node --check src/dataset.js && node --check src/env.js && node --check src/prompts.js && node --check src/utils.js && node --check src/index.js && node --check bin/ddo.js && node --check public/app.js && node --check scripts/doctor.js && python3 -m compileall -q ddo_optimizer python_tests",
+    "check": "node --check src/server.js && node --check src/ddoEngine.js && node --check src/openaiAdapter.js && node --check src/dataset.js && node --check src/env.js && node --check src/prompts.js && node --check src/utils.js && node --check src/index.js && node --check bin/ddo.js && node --check public/app.js && node --check scripts/doctor.js && node --check scripts/check-docs.js && npm run docs:check && python3 -m compileall -q ddo_optimizer python_tests",
+    "docs:check": "node scripts/check-docs.js",
     "doctor": "node scripts/doctor.js",
     "start": "node src/server.js",
     "dev": "node src/server.js",

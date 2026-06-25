@@ -1,6 +1,6 @@
 # Quickstart
 
-Use this when you want the fastest path to a running DDO app.
+Use this when you want the fastest path to a working DDO run. The web UI is the recommended first experience. If you do not have an API key yet, start with the [Jupyter notebook](jupyter-notebook.md), which includes an offline demo.
 
 ## 1. Clone And Install
 
@@ -8,6 +8,12 @@ Use this when you want the fastest path to a running DDO app.
 git clone https://github.com/irodcompany5-tech/ddo.git
 cd ddo
 npm install
+```
+
+Optional Python notebook support:
+
+```bash
+python -m pip install -e ".[notebook]"
 ```
 
 ## 2. Configure API Key
@@ -24,10 +30,13 @@ OPENAI_API_KEY=<your-openai-api-key>
 
 You can also leave `.env` empty and paste a key into the UI for a single run.
 
+Use any OpenAI-compatible model ID your account can access. The UI and `.env` model fields can be changed without editing code.
+
 ## 3. Check Setup
 
 ```bash
 npm run doctor
+npm run docs:check
 npm run check
 npm test
 ```
@@ -53,7 +62,15 @@ http://127.0.0.1:5174
 5. Click `Start DDO`.
 6. Open the `Results` tab and copy or export the optimized prompt.
 
-## 6. Common First-Run Settings
+## 6. Run The Notebook Instead
+
+```bash
+python -m notebook notebooks/ddo_quickstart.ipynb
+```
+
+The first notebook flow runs with a fake model client and local evaluator, so it is safe for training, demos, and onboarding.
+
+## 7. Common First-Run Settings
 
 ```text
 Horizon: 3
@@ -66,3 +83,13 @@ Verifier gate: on
 ```
 
 These settings keep the first run cheap and easy to inspect.
+
+## 8. Done Checklist
+
+You have a healthy first setup when:
+
+- `npm run doctor` passes.
+- `npm run check` passes.
+- The UI loads at `http://127.0.0.1:5174`.
+- A demo run produces an optimized prompt.
+- The accepted repair history looks targeted, not like a full prompt rewrite.

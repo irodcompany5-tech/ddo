@@ -8,17 +8,20 @@
       "onAutoForward": "notify"
     }
   },
-  "postCreateCommand": "npm install && npm run doctor",
+  "postCreateCommand": "npm install && python3 -m venv .venv && .venv/bin/python -m pip install --upgrade pip && .venv/bin/python -m pip install -e \".[notebook]\" && npm run doctor",
   "customizations": {
     "vscode": {
       "settings": {
         "editor.formatOnSave": true,
         "files.eol": "\n",
+        "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
         "terminal.integrated.defaultProfile.linux": "bash"
       },
       "extensions": [
         "dbaeumer.vscode-eslint",
-        "GitHub.vscode-github-actions"
+        "GitHub.vscode-github-actions",
+        "ms-python.python",
+        "ms-toolsai.jupyter"
       ]
     }
   }

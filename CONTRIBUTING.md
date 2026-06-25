@@ -14,6 +14,7 @@ Open `http://127.0.0.1:5174`.
 ## Development Checks
 
 ```bash
+npm run docs:check
 npm run check
 npm test
 ```
@@ -30,6 +31,7 @@ Use small commits that describe one logical change:
 ## Pull Request Checklist
 
 - No secrets or private datasets committed.
+- Documentation links pass with `npm run docs:check`.
 - `npm run check` passes.
 - `npm test` passes.
 - README or docs updated when behavior changes.

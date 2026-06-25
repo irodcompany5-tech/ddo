@@ -1,6 +1,7 @@
 .env
 .env.*
 !.env.example
+.npmrc
 node_modules/
 run-results/
 coverage/
