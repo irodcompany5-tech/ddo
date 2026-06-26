@@ -30,6 +30,7 @@ Use these OpenRouter model IDs:
 | --- | --- |
 | [prompts/base-system.md](prompts/base-system.md) | Baseline system prompt for the base model |
 | [prompts/ddo-optimized-prompt.md](prompts/ddo-optimized-prompt.md) | Optimized prompt from the recorded DDO run |
+| [prompts/checkpoint-prompt.md](prompts/checkpoint-prompt.md) | Checkpoint prompt for the next optimization pass |
 | [prompts/optimizer-behavior-spec.md](prompts/optimizer-behavior-spec.md) | DDO behavior spec for fitting prompts |
 | [prompts/evaluator-system.md](prompts/evaluator-system.md) | LLM evaluator prompt for qualitative auditing |
 | [results.md](results.md) | Detailed report for the recorded validation and test run |
@@ -93,6 +94,29 @@ ddo-optimize \
 ```
 
 Then run the optimized prompt on the test split and score it the same way as the baseline.
+
+## Continue From The Checkpoint
+
+Use the recorded optimized prompt as the next checkpoint and switch only the prompt-optimizer role to Claude Sonnet 4.6:
+
+```bash
+OPENAI_API_KEY="$OPENROUTER_API_KEY" \
+OPENAI_BASE_URL="https://openrouter.ai/api/v1" \
+ddo-optimize \
+  --prompt benchmarks/ifeval/prompts/checkpoint-prompt.md \
+  --spec benchmarks/ifeval/prompts/optimizer-behavior-spec.md \
+  --dataset benchmarks/ifeval/train-ddo.jsonl \
+  --teacher-model anthropic/claude-sonnet-4.6 \
+  --student-model google/gemma-3n-e4b-it \
+  --verifier-model google/gemma-4-31b-it \
+  --api-mode chat \
+  --horizon 3 \
+  --budget 6 \
+  --output run-results/ifeval/claude-checkpoint-optimized-prompt.md \
+  --result-json run-results/ifeval/claude-checkpoint-run.json
+```
+
+The student and verifier stay unchanged. Claude is only the prompt optimizer / repair model for this continuation pass.
 
 ## Metrics To Report
 

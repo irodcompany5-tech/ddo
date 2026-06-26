@@ -24,6 +24,7 @@ This page records the deterministic 150/50/50 IFEval experiment for DDO in this 
 | --- | --- |
 | [prompts/base-system.md](prompts/base-system.md) | Baseline system prompt |
 | [prompts/ddo-optimized-prompt.md](prompts/ddo-optimized-prompt.md) | Prompt produced by the recorded DDO run |
+| [prompts/checkpoint-prompt.md](prompts/checkpoint-prompt.md) | Checkpoint prompt for the next optimization pass |
 | [prompts/optimizer-behavior-spec.md](prompts/optimizer-behavior-spec.md) | Optimization behavior spec |
 | [prompts/evaluator-system.md](prompts/evaluator-system.md) | Qualitative evaluator prompt |
 
@@ -58,3 +59,24 @@ This page records the deterministic 150/50/50 IFEval experiment for DDO in this 
 The result is mixed. DDO improved the held-out test score, but it regressed on validation. That means the method can help on this split, but this specific prompt and verifier setup are not stable enough to call it a general win.
 
 The response JSONL files also include `latency_seconds`, but two older optimized-test rows were logged with negative wall-clock values before the runner switched to monotonic timing. For this report, use score, token, and cost metrics as the stable comparison points.
+
+## Next Checkpoint
+
+The current checkpoint prompt is [prompts/checkpoint-prompt.md](prompts/checkpoint-prompt.md). Use it as the starting point for the next pass and make only the prompt optimizer model Claude Sonnet 4.6:
+
+```bash
+OPENAI_API_KEY="$OPENROUTER_API_KEY" \
+OPENAI_BASE_URL="https://openrouter.ai/api/v1" \
+ddo-optimize \
+  --prompt benchmarks/ifeval/prompts/checkpoint-prompt.md \
+  --spec benchmarks/ifeval/prompts/optimizer-behavior-spec.md \
+  --dataset benchmarks/ifeval/train-ddo.jsonl \
+  --teacher-model anthropic/claude-sonnet-4.6 \
+  --student-model google/gemma-3n-e4b-it \
+  --verifier-model google/gemma-4-31b-it \
+  --api-mode chat \
+  --horizon 3 \
+  --budget 6 \
+  --output run-results/ifeval/claude-checkpoint-optimized-prompt.md \
+  --result-json run-results/ifeval/claude-checkpoint-run.json
+```

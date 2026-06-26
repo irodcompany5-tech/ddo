@@ -131,7 +131,7 @@ Use OpenRouter models requested for this experiment:
 
 ```text
 Base/student: google/gemma-3n-e4b-it
-Optimizer/teacher: google/gemma-4-31b-it
+Optimizer/teacher: anthropic/claude-sonnet-4.6
 Validator/verifier: google/gemma-4-31b-it
 ```
 
@@ -142,6 +142,8 @@ python -m pip install -e ".[benchmarks]"
 ```
 
 Then follow [benchmarks/ifeval/README.md](../benchmarks/ifeval/README.md) for baseline, DDO, and held-out scoring commands.
+
+For the next optimization pass, start from [benchmarks/ifeval/prompts/checkpoint-prompt.md](../benchmarks/ifeval/prompts/checkpoint-prompt.md).
 
 ## Recorded Example
 
