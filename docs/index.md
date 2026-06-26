@@ -17,6 +17,7 @@ Fast links:
 - [Benchmarking](benchmarking.md)
 - [Benchmark claims](../benchmarks/claims.md)
 - [Benchmark results](../benchmarks/results.md)
+- [Full-corpus IFEval report](../benchmarks/ifeval/full-corpus/results.md)
 - [IFEval report](../benchmarks/ifeval/results.md)
 - [Dataset format](dataset-format.md)
 - [Configuration](configuration.md)

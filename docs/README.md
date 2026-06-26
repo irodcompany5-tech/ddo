@@ -15,6 +15,7 @@ This is the documentation hub for Diagnostic Dialogue Optimization (DDO). It is 
 | Publish before/after evidence | [Benchmarking](benchmarking.md) | Benchmark shortlist, protocol, result table format |
 | Frame claims | [Benchmark claims](../benchmarks/claims.md) | Defensible wording and evidence boundaries |
 | See benchmark results | [Benchmark results](../benchmarks/results.md) | Published result table |
+| Read the full-corpus report | [Full-corpus IFEval report](../benchmarks/ifeval/full-corpus/results.md) | 541-row IFEval run with Gemma 4 optimizer |
 | Read the IFEval report | [IFEval report](../benchmarks/ifeval/results.md) | Full 150/50/50 run report |
 | Prepare data | [Dataset format](dataset-format.md) | JSON, JSONL, CSV, text, aliases, tips |
 | Tune settings | [Configuration](configuration.md) | API keys, model IDs, budgets, verifier settings |

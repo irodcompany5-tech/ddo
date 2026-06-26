@@ -145,6 +145,27 @@ Then follow [benchmarks/ifeval/README.md](../benchmarks/ifeval/README.md) for ba
 
 For the next optimization pass, start from [benchmarks/ifeval/prompts/checkpoint-prompt.md](../benchmarks/ifeval/prompts/checkpoint-prompt.md).
 
+## Full Corpus IFEval
+
+For a stronger benchmark, use the full 541-row IFEval corpus with a 441/50/50 split:
+
+| Split | Rows | Use |
+| --- | ---: | --- |
+| `train.jsonl` | 441 | DDO prompt fitting |
+| `validation.jsonl` | 50 | verifier and prompt selection |
+| `test.jsonl` | 50 | final held-out score |
+
+Generate it with:
+
+```bash
+python3 scripts/prepare-ifeval-splits.py \
+  --output-dir benchmarks/ifeval/full-corpus \
+  --source-file benchmarks/ifeval/raw/input_data.jsonl \
+  --full-corpus
+```
+
+The published run report is [full-corpus/results.md](../benchmarks/ifeval/full-corpus/results.md). It uses `google/gemma-4-31b-it` as the optimizer/teacher instead of Claude Sonnet 4.6.
+
 ## Recorded Example
 
 The repository includes a complete IFEval run report at [benchmarks/ifeval/results.md](../benchmarks/ifeval/results.md).

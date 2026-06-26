@@ -20,19 +20,33 @@ def main() -> int:
     parser.add_argument("--train-size", type=int, default=150)
     parser.add_argument("--validation-size", type=int, default=50)
     parser.add_argument("--test-size", type=int, default=50)
+    parser.add_argument("--full-corpus", action="store_true", help="Use every available row for train, leaving validation and test unchanged.")
+    parser.add_argument("--source-file", help="Optional local JSONL source file. Skips downloading the official corpus.")
     parser.add_argument("--source-url", default=SOURCE_URL)
     args = parser.parse_args()
 
     output_dir = Path(args.output_dir)
-    raw_dir = output_dir / "raw"
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    source_path = raw_dir / "input_data.jsonl"
+    if args.source_file:
+        source_path = Path(args.source_file)
+    else:
+        raw_dir = output_dir / "raw"
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        source_path = raw_dir / "input_data.jsonl"
 
-    if not source_path.exists():
-      download(args.source_url, source_path)
+        if not source_path.exists():
+            download(args.source_url, source_path)
 
     rows = [json.loads(line) for line in source_path.read_text(encoding="utf-8").splitlines() if line.strip()]
-    required = args.train_size + args.validation_size + args.test_size
+    if args.full_corpus:
+        train_size = len(rows) - args.validation_size - args.test_size
+        if train_size < 0:
+            raise SystemExit(
+                f"Need at least {args.validation_size + args.test_size} rows for validation and test but source only has {len(rows)}"
+            )
+    else:
+        train_size = args.train_size
+
+    required = train_size + args.validation_size + args.test_size
     if len(rows) < required:
         raise SystemExit(f"Need {required} rows but source only has {len(rows)}")
 
@@ -41,9 +55,9 @@ def main() -> int:
     rng.shuffle(shuffled)
 
     splits = {
-        "train": shuffled[: args.train_size],
-        "validation": shuffled[args.train_size : args.train_size + args.validation_size],
-        "test": shuffled[args.train_size + args.validation_size : required],
+        "train": shuffled[: train_size],
+        "validation": shuffled[train_size : train_size + args.validation_size],
+        "test": shuffled[train_size + args.validation_size : required],
     }
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -53,8 +67,10 @@ def main() -> int:
 
     metadata = {
         "source_url": args.source_url,
+        "source_file": str(source_path),
         "source_sha256": sha256(source_path),
         "seed": args.seed,
+        "full_corpus": bool(args.full_corpus),
         "sizes": {name: len(value) for name, value in splits.items()},
         "total_source_rows": len(rows),
         "license_note": "Google Research datasets are distributed under CC BY 4.0 according to the Google Research repository.",

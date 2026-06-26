@@ -11,6 +11,7 @@ This folder is for reproducible before/after evidence for DDO prompt optimizatio
 | [claims.md](claims.md) | Defensible benchmark framing and wording |
 | [results.md](results.md) | Published benchmark result table |
 | [ifeval/](ifeval/) | Ready-to-run IFEval 150/50/50 split and prompts |
+| [ifeval/full-corpus/](ifeval/full-corpus/) | Full 541-row IFEval split and benchmark report |
 
 ## Workflow
 

@@ -1,0 +1,22 @@
+{
+  "source_url": "https://raw.githubusercontent.com/google-research/google-research/master/instruction_following_eval/data/input_data.jsonl",
+  "source_file": "benchmarks/ifeval/raw/input_data.jsonl",
+  "source_sha256": "67ffeee0fcb87c317c5b08a2de85557b4a7e96ada6178aa645b4954fe4b53d49",
+  "seed": 20260626,
+  "full_corpus": true,
+  "sizes": {
+    "train": 441,
+    "validation": 50,
+    "test": 50
+  },
+  "total_source_rows": 541,
+  "license_note": "Google Research datasets are distributed under CC BY 4.0 according to the Google Research repository.",
+  "split_files": {
+    "train": "train.jsonl",
+    "validation": "validation.jsonl",
+    "test": "test.jsonl",
+    "train_ddo": "train-ddo.jsonl",
+    "validation_ddo": "validation-ddo.jsonl",
+    "test_ddo": "test-ddo.jsonl"
+  }
+}

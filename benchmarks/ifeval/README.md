@@ -4,7 +4,7 @@ IFEval is the best first public benchmark for DDO because it measures instructio
 
 ## Splits
 
-This folder contains deterministic samples from the official Google Research IFEval input file:
+This folder contains the deterministic 150/50/50 sample from the official Google Research IFEval input file:
 
 | Split | Rows | Purpose |
 | --- | ---: | --- |
@@ -13,6 +13,14 @@ This folder contains deterministic samples from the official Google Research IFE
 | `test.jsonl` | 50 | Final held-out comparison only |
 
 The split metadata is in [split-metadata.json](split-metadata.json).
+
+The repository also includes a full-corpus split at [full-corpus/](full-corpus/):
+
+| Split | Rows | Purpose |
+| --- | ---: | --- |
+| `train.jsonl` | 441 | Full-corpus prompt fitting / DDO diagnostic examples |
+| `validation.jsonl` | 50 | Full-corpus verifier checks and prompt selection |
+| `test.jsonl` | 50 | Full-corpus final held-out comparison only |
 
 ## Models
 
@@ -32,6 +40,7 @@ Use these OpenRouter model IDs:
 | [prompts/ddo-optimized-prompt.md](prompts/ddo-optimized-prompt.md) | Optimized prompt from the recorded DDO run |
 | [prompts/checkpoint-prompt.md](prompts/checkpoint-prompt.md) | Checkpoint prompt for the next optimization pass |
 | [prompts/claude-round2-optimized-prompt.md](prompts/claude-round2-optimized-prompt.md) | Optimized prompt from the second pass |
+| [prompts/full-corpus-gemma4-optimized-prompt.md](prompts/full-corpus-gemma4-optimized-prompt.md) | Optimized prompt from the full-corpus Gemma 4 run |
 | [prompts/optimizer-behavior-spec.md](prompts/optimizer-behavior-spec.md) | DDO behavior spec for fitting prompts |
 | [prompts/evaluator-system.md](prompts/evaluator-system.md) | LLM evaluator prompt for qualitative auditing |
 | [results.md](results.md) | Detailed report for the recorded validation and test run |
@@ -151,5 +160,20 @@ A completed sample run is recorded in [results.md](results.md). The headline out
 The response logs also include token and cost data for each run. Treat latency as diagnostic only; the older run logs were captured before the runner switched to monotonic timing.
 
 The second optimization pass improved validation loose accuracy from `0.78` to `0.80`, but it moved the held-out strict test score back from `0.86` to `0.84`. The two-round strict test gain from the original baseline is still `0.00`.
+
+## Full Corpus Run
+
+The full-corpus variant keeps the same held-out protocol but uses all 541 source rows, with 441 rows available for prompt fitting. The optimizer/teacher remains Gemma 4 instead of Sonnet.
+
+Generate the split:
+
+```bash
+python3 scripts/prepare-ifeval-splits.py \
+  --output-dir benchmarks/ifeval/full-corpus \
+  --source-file benchmarks/ifeval/raw/input_data.jsonl \
+  --full-corpus
+```
+
+Read the published report at [full-corpus/results.md](full-corpus/results.md).
 
 Do not claim improvement unless held-out test scores improve.

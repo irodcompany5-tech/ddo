@@ -22,6 +22,7 @@ Use it as a web UI, a Python package, an npm package, a CLI, a Jupyter notebook,
 | Benchmark before/after results | [Benchmarking guide](docs/benchmarking.md) |
 | Defensible claim framing | [Benchmark claims](benchmarks/claims.md) |
 | See published benchmark results | [Benchmark results](benchmarks/results.md) |
+| Full-corpus IFEval report | [Full-corpus report](benchmarks/ifeval/full-corpus/results.md) |
 | Run from a terminal | [CLI guide](docs/cli.md) |
 | Understand all docs | [Documentation hub](docs/README.md) |
 
@@ -157,6 +158,7 @@ Start with:
 | [examples/](examples/) | Starter datasets |
 | [benchmarks/](benchmarks/) | Benchmark manifest, result table, and templates |
 | [benchmarks/ifeval/](benchmarks/ifeval/) | Deterministic 150/50/50 IFEval experiment and report |
+| [benchmarks/ifeval/full-corpus/](benchmarks/ifeval/full-corpus/) | Full 541-row IFEval experiment and report |
 | [docs/](docs/) | User and maintainer documentation |
 | [.github/workflows/ci.yml](.github/workflows/ci.yml) | CI checks for code, docs, and tests |
 

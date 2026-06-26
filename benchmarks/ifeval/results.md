@@ -26,6 +26,7 @@ This page records the deterministic 150/50/50 IFEval experiment for DDO in this 
 | [prompts/ddo-optimized-prompt.md](prompts/ddo-optimized-prompt.md) | Prompt produced by the recorded DDO run |
 | [prompts/checkpoint-prompt.md](prompts/checkpoint-prompt.md) | Checkpoint prompt for the next optimization pass |
 | [prompts/claude-round2-optimized-prompt.md](prompts/claude-round2-optimized-prompt.md) | Prompt produced by the second optimization pass |
+| [prompts/full-corpus-gemma4-optimized-prompt.md](prompts/full-corpus-gemma4-optimized-prompt.md) | Prompt produced by the full-corpus Gemma 4 run |
 | [prompts/optimizer-behavior-spec.md](prompts/optimizer-behavior-spec.md) | Optimization behavior spec |
 | [prompts/evaluator-system.md](prompts/evaluator-system.md) | Qualitative evaluator prompt |
 
@@ -129,3 +130,7 @@ The second pass starts from the checkpoint prompt and uses Claude Sonnet 4.6 as 
 ## Second Pass Conclusion
 
 The second optimization pass improved validation loose accuracy, but the held-out strict test score moved back to `0.84`, which matches the original baseline. The two-round net strict held-out gain is zero.
+
+## Full Corpus Run
+
+For the full 541-row benchmark with a 441/50/50 split and the Gemma 4 optimizer, read [full-corpus/results.md](full-corpus/results.md). That is the fuller benchmark to cite when you want the complete source corpus rather than the 150/50/50 sample.
