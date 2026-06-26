@@ -111,6 +111,38 @@ Start small and publish only reproducible rows:
 
 If a benchmark score does not improve, publish that too. Negative or flat results are useful because they show where DDO needs a better evaluator, more representative fitting data, or a different prompt repair policy.
 
+## Included IFEval Experiment
+
+The repository includes a deterministic IFEval experiment at [benchmarks/ifeval](../benchmarks/ifeval/):
+
+| Split | Rows | Use |
+| --- | ---: | --- |
+| `train.jsonl` | 150 | DDO prompt fitting |
+| `validation.jsonl` | 50 | verifier and prompt selection |
+| `test.jsonl` | 50 | final held-out score |
+
+Regenerate the sample:
+
+```bash
+npm run ifeval:prepare
+```
+
+Use OpenRouter models requested for this experiment:
+
+```text
+Base/student: google/gemma-3n-e4b-it
+Optimizer/teacher: google/gemma-4-31b-it
+Validator/verifier: google/gemma-4-31b-it
+```
+
+Install benchmark extras:
+
+```bash
+python -m pip install -e ".[benchmarks]"
+```
+
+Then follow [benchmarks/ifeval/README.md](../benchmarks/ifeval/README.md) for baseline, DDO, and held-out scoring commands.
+
 ## Sources
 
 - [GSM8K official repository](https://github.com/openai/grade-school-math)

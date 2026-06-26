@@ -4,6 +4,9 @@
 .npmrc
 node_modules/
 run-results/
+benchmarks/ifeval/raw/
+benchmarks/ifeval/responses/
+benchmarks/ifeval/results/
 coverage/
 dist/
 build/

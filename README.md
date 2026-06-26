@@ -154,6 +154,7 @@ Start with:
 | [notebooks/](notebooks/) | Jupyter walkthroughs |
 | [examples/](examples/) | Starter datasets |
 | [benchmarks/](benchmarks/) | Benchmark manifest and result table template |
+| [benchmarks/ifeval/](benchmarks/ifeval/) | Deterministic 150/50/50 IFEval experiment |
 | [docs/](docs/) | User and maintainer documentation |
 | [.github/workflows/ci.yml](.github/workflows/ci.yml) | CI checks for code, docs, and tests |
 
@@ -162,6 +163,7 @@ Start with:
 ```bash
 npm run doctor
 npm run docs:check
+npm run ifeval:prepare
 npm run benchmarks:table -- benchmarks/results-template.csv
 npm run check
 npm test

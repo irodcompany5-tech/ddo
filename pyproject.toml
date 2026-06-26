@@ -34,6 +34,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+benchmarks = ["absl-py>=2.0.0", "immutabledict>=4.2.0", "langdetect>=1.0.9", "nltk>=3.9.0"]
 deepeval = ["deepeval>=4.0.0"]
 notebook = ["notebook>=7.0.0", "ipykernel>=6.0.0"]
 dev = ["build>=1.2.0", "twine>=5.0.0"]
