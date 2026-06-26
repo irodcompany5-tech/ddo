@@ -130,10 +130,12 @@ npm run ifeval:prepare
 Use OpenRouter models requested for this experiment:
 
 ```text
-Base/student: google/gemma-3n-e4b-it
-Optimizer/teacher: anthropic/claude-sonnet-4.6
+Base/student: google/gemma-4-31b-it
+Optimizer/teacher: google/gemma-4-31b-it
 Validator/verifier: google/gemma-4-31b-it
 ```
+
+This is the current Gemma 4 long-run preset. The older published IFEval report in this repo remains available as a historical comparison.
 
 Install benchmark extras:
 
@@ -164,7 +166,26 @@ python3 scripts/prepare-ifeval-splits.py \
   --full-corpus
 ```
 
-The published run report is [full-corpus/results.md](../benchmarks/ifeval/full-corpus/results.md). It uses `google/gemma-4-31b-it` as the optimizer/teacher instead of Claude Sonnet 4.6.
+The published run report is [full-corpus/results.md](../benchmarks/ifeval/full-corpus/results.md). It uses the full 541-row corpus and the Gemma 4 optimizer preset.
+
+For the Gemma 4 long-run preset, use 5 optimization epochs and a 1,000,000 token cap:
+
+```bash
+ddo-optimize \
+  --prompt benchmarks/ifeval/prompts/base-system.md \
+  --spec benchmarks/ifeval/prompts/optimizer-behavior-spec.md \
+  --dataset benchmarks/ifeval/full-corpus/train-ddo.jsonl \
+  --teacher-model google/gemma-4-31b-it \
+  --student-model google/gemma-4-31b-it \
+  --verifier-model google/gemma-4-31b-it \
+  --api-mode chat \
+  --horizon 3 \
+  --epochs 5 \
+  --max-total-tokens 1000000 \
+  --budget 6 \
+  --output run-results/ifeval/full-corpus/ddo-optimized-prompt.md \
+  --result-json run-results/ifeval/full-corpus/ddo-run.json
+```
 
 ## Recorded Example
 

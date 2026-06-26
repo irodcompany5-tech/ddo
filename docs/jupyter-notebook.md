@@ -51,9 +51,9 @@ Set your key before opening Jupyter:
 
 ```bash
 export OPENAI_API_KEY="<your-openai-api-key>"
-export DDO_TEACHER_MODEL="gpt-5.5"
-export DDO_STUDENT_MODEL="gpt-5.5"
-export DDO_VERIFIER_MODEL="gpt-5.5"
+export DDO_TEACHER_MODEL="google/gemma-4-31b-it"
+export DDO_STUDENT_MODEL="google/gemma-4-31b-it"
+export DDO_VERIFIER_MODEL="google/gemma-4-31b-it"
 ```
 
 Then uncomment the live OpenAI cell in the notebook.

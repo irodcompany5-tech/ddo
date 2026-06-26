@@ -39,9 +39,9 @@ result = optimizer.optimize(
             "notes": "Must return valid JSON only.",
         }
     ],
-    teacher_model="gpt-5.5",
-    student_model="gpt-5.5",
-    verifier_model="gpt-5.5",
+    teacher_model="google/gemma-4-31b-it",
+    student_model="google/gemma-4-31b-it",
+    verifier_model="google/gemma-4-31b-it",
     horizon=3,
     budget=6,
 )
@@ -142,7 +142,7 @@ Example:
 ddo-optimize \
   --prompt prompt.txt \
   --dataset examples/dataset.jsonl \
-  --teacher-model gpt-5.5 \
-  --student-model gpt-5.5 \
+  --teacher-model google/gemma-4-31b-it \
+  --student-model google/gemma-4-31b-it \
   --output optimized-prompt.txt
 ```

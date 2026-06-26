@@ -13,8 +13,10 @@ DDO has two command-line entrypoints:
 ddo-optimize \
   --prompt prompt.txt \
   --dataset dataset.jsonl \
-  --teacher-model gpt-5.5 \
-  --student-model gpt-5.5 \
+  --teacher-model google/gemma-4-31b-it \
+  --student-model google/gemma-4-31b-it \
+  --epochs 5 \
+  --max-total-tokens 1000000 \
   --output optimized-prompt.txt \
   --result-json ddo-result.json
 ```
@@ -25,8 +27,10 @@ ddo-optimize \
 ddo optimize \
   --prompt prompt.txt \
   --dataset dataset.jsonl \
-  --teacher-model gpt-5.5 \
-  --student-model gpt-5.5 \
+  --teacher-model google/gemma-4-31b-it \
+  --student-model google/gemma-4-31b-it \
+  --epochs 5 \
+  --max-total-tokens 1000000 \
   --output optimized-prompt.txt \
   --result-json ddo-result.json
 ```
@@ -77,7 +81,9 @@ ddo-optimize \
   --prompt prompt.txt \
   --dataset dataset.jsonl \
   --horizon 3 \
+  --epochs 5 \
   --budget 6 \
+  --max-total-tokens 1000000 \
   --patience 2 \
   --output optimized-prompt.txt
 ```

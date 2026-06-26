@@ -27,15 +27,17 @@ export function buildRunOptions(payload = {}) {
     organization: payload.organization || env.OPENAI_ORG_ID || '',
     project: payload.project || env.OPENAI_PROJECT_ID || '',
     apiMode: payload.apiMode || env.DDO_API_MODE || 'responses',
-    teacherModel: payload.teacherModel || env.DDO_TEACHER_MODEL || 'gpt-5.5',
-    studentModel: payload.studentModel || env.DDO_STUDENT_MODEL || 'gpt-5.5',
-    verifierModel: payload.verifierModel || env.DDO_VERIFIER_MODEL || payload.teacherModel || 'gpt-5.5',
+    teacherModel: payload.teacherModel || env.DDO_TEACHER_MODEL || 'google/gemma-4-31b-it',
+    studentModel: payload.studentModel || env.DDO_STUDENT_MODEL || 'google/gemma-4-31b-it',
+    verifierModel: payload.verifierModel || env.DDO_VERIFIER_MODEL || payload.teacherModel || 'google/gemma-4-31b-it',
     behaviorSpec: payload.behaviorSpec || DEFAULT_BEHAVIOR_SPEC,
     initialPrompt: payload.initialPrompt || DEFAULT_INITIAL_PROMPT,
     dataset: normalizeDataset(payload.dataset),
     horizon: clampNumber(payload.horizon, 1, 20, Number(env.DDO_HORIZON) || 5),
+    epochs: clampNumber(payload.epochs, 1, 100, Number(env.DDO_EPOCHS) || 5),
     budget: clampNumber(payload.budget, 1, 200, Number(env.DDO_BUDGET) || 20),
     patience: clampNumber(payload.patience, 1, 20, Number(env.DDO_PATIENCE) || 2),
+    maxTotalTokens: clampNumber(payload.maxTotalTokens, 1000, 10000000, Number(env.DDO_MAX_TOTAL_TOKENS) || 1000000),
     confidenceThreshold: clampNumber(
       payload.confidenceThreshold,
       0,
@@ -67,6 +69,7 @@ export async function runDDO(payload, emit = () => {}) {
   const client = createOpenAIClient(options);
   const callUsage = [];
   const scoreCache = new Map();
+  let tokenTotal = 0;
 
   let prompt = options.initialPrompt;
   let bestPrompt = prompt;
@@ -83,7 +86,12 @@ export async function runDDO(payload, emit = () => {}) {
     initialPrompt: prompt
   });
 
-  while (spent < options.budget && stall < options.patience) {
+  while (
+    spent < options.budget &&
+    stall < options.patience &&
+    iteration < options.epochs &&
+    tokenTotal < options.maxTotalTokens
+  ) {
     iteration += 1;
     const transcript = [];
 
@@ -105,6 +113,7 @@ export async function runDDO(payload, emit = () => {}) {
         turn
       });
       callUsage.push(policy.usage);
+      tokenTotal = usageTotals(callUsage).total_tokens;
 
       emit({
         type: 'teacher_question',
@@ -134,6 +143,7 @@ export async function runDDO(payload, emit = () => {}) {
         question
       });
       callUsage.push(student.usage);
+      tokenTotal = usageTotals(callUsage).total_tokens;
       spent += 1;
 
       const entry = {
@@ -152,10 +162,12 @@ export async function runDDO(payload, emit = () => {}) {
         turn,
         entry,
         spent,
-        budget: options.budget
+        budget: options.budget,
+        tokenTotal,
+        maxTotalTokens: options.maxTotalTokens
       });
 
-      if (policy.data.diagnosisComplete) break;
+      if (policy.data.diagnosisComplete || tokenTotal >= options.maxTotalTokens) break;
     }
 
     if (!transcript.length) {
@@ -177,6 +189,7 @@ export async function runDDO(payload, emit = () => {}) {
       history
     });
     callUsage.push(weaknessResult.usage);
+    tokenTotal = usageTotals(callUsage).total_tokens;
     const weakness = weaknessResult.data;
 
     emit({
@@ -216,6 +229,7 @@ export async function runDDO(payload, emit = () => {}) {
       history
     });
     callUsage.push(repairResult.usage);
+    tokenTotal = usageTotals(callUsage).total_tokens;
     const repair = normalizeRepair(repairResult.data, prompt);
     const growthRatio = prompt.length ? Math.max(0, repair.new_prompt.length - prompt.length) / prompt.length : 0;
     const minimalityRejected =
@@ -257,6 +271,7 @@ export async function runDDO(payload, emit = () => {}) {
       scoreCache,
       callUsage
     });
+    tokenTotal = usageTotals(callUsage).total_tokens;
 
     if (verifier) {
       emit({
@@ -319,6 +334,16 @@ export async function runDDO(payload, emit = () => {}) {
       bestScore,
       history: summarizeHistory(history)
     });
+
+    if (tokenTotal >= options.maxTotalTokens) {
+      emit({
+        type: 'token_limit_reached',
+        iteration,
+        tokenTotal,
+        maxTotalTokens: options.maxTotalTokens
+      });
+      break;
+    }
   }
 
   const result = {
@@ -327,7 +352,16 @@ export async function runDDO(payload, emit = () => {}) {
     bestScore,
     spent,
     iterations: iteration,
-    stoppedReason: stopReason({ spent, budget: options.budget, stall, patience: options.patience }),
+    stoppedReason: stopReason({
+      spent,
+      budget: options.budget,
+      stall,
+      patience: options.patience,
+      iterations: iteration,
+      epochs: options.epochs,
+      tokenTotal,
+      maxTotalTokens: options.maxTotalTokens
+    }),
     history,
     usage: usageTotals(callUsage)
   };
@@ -637,7 +671,9 @@ export async function scorePrompt({ client, options, prompt, scoreCache, callUsa
   return summary;
 }
 
-function stopReason({ spent, budget, stall, patience }) {
+function stopReason({ spent, budget, stall, patience, iterations, epochs, tokenTotal, maxTotalTokens }) {
+  if (tokenTotal >= maxTotalTokens) return 'token_limit_exhausted';
+  if (iterations >= epochs) return 'epoch_limit_exhausted';
   if (spent >= budget) return 'budget_exhausted';
   if (stall >= patience) return 'patience_exhausted';
   return 'completed';

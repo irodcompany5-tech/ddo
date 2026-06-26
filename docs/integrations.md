@@ -110,8 +110,8 @@ result = optimize_with_deepeval(
     ],
     metrics=[AnswerRelevancyMetric()],
     model_callback=model_callback,
-    teacher_model="gpt-5.5",
-    student_model="gpt-5.5",
+    teacher_model="google/gemma-4-31b-it",
+    student_model="google/gemma-4-31b-it",
 )
 ```
 

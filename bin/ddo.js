@@ -138,7 +138,7 @@ function printHelp() {
   console.log(`DDO Prompt Optimizer
 
 Usage:
-  ddo optimize --prompt prompt.txt --dataset examples/dataset.jsonl --teacher-model gpt-5.5 --student-model gpt-5.5
+  ddo optimize --prompt prompt.txt --dataset examples/dataset.jsonl --teacher-model google/gemma-4-31b-it --student-model google/gemma-4-31b-it
 
 Options:
   --prompt <text|file>             Initial student system prompt
@@ -149,8 +149,10 @@ Options:
   --verifier-model <model>         Verifier model
   --api-mode <responses|chat>      OpenAI API mode
   --horizon <n>                    Diagnostic turns per iteration
+  --epochs <n>                     Maximum optimization iterations
   --budget <n>                     Total student diagnostic exchanges
   --patience <n>                   Stalls before termination
+  --max-total-tokens <n>           Stop when accumulated usage reaches this cap
   --no-verifier                    Disable verifier gate
   --output <file>                  Write final prompt to a file
   --result-json <file>             Write full run result JSON

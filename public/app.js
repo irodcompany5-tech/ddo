@@ -18,11 +18,13 @@ const els = {
   behaviorSpec: document.getElementById('behaviorSpec'),
   initialPrompt: document.getElementById('initialPrompt'),
   horizon: document.getElementById('horizon'),
+  epochs: document.getElementById('epochs'),
   budget: document.getElementById('budget'),
   patience: document.getElementById('patience'),
   confidenceThreshold: document.getElementById('confidenceThreshold'),
   regressionEpsilon: document.getElementById('regressionEpsilon'),
   validationLimit: document.getElementById('validationLimit'),
+  maxTotalTokens: document.getElementById('maxTotalTokens'),
   verifierEnabled: document.getElementById('verifierEnabled'),
   minimalityMode: document.getElementById('minimalityMode'),
   datasetFile: document.getElementById('datasetFile'),
@@ -68,11 +70,13 @@ async function loadConfig() {
   els.behaviorSpec.value = defaults.behaviorSpec;
   els.initialPrompt.value = defaults.initialPrompt;
   els.horizon.value = defaults.horizon;
+  els.epochs.value = defaults.epochs;
   els.budget.value = defaults.budget;
   els.patience.value = defaults.patience;
   els.confidenceThreshold.value = defaults.confidenceThreshold;
   els.regressionEpsilon.value = defaults.regressionEpsilon;
   els.validationLimit.value = defaults.validationLimit;
+  els.maxTotalTokens.value = defaults.maxTotalTokens;
 }
 
 function wireTabs() {
@@ -200,11 +204,13 @@ function collectPayload() {
     behaviorSpec: els.behaviorSpec.value.trim(),
     initialPrompt: els.initialPrompt.value.trim(),
     horizon: Number(els.horizon.value),
+    epochs: Number(els.epochs.value),
     budget: Number(els.budget.value),
     patience: Number(els.patience.value),
     confidenceThreshold: Number(els.confidenceThreshold.value),
     regressionEpsilon: Number(els.regressionEpsilon.value),
     validationLimit: Number(els.validationLimit.value),
+    maxTotalTokens: Number(els.maxTotalTokens.value),
     verifierEnabled: els.verifierEnabled.checked,
     minimalityMode: els.minimalityMode.value,
     dataset: state.dataset
@@ -244,6 +250,9 @@ function handleEvent(event) {
       break;
     case 'stalled':
       addEvent('stalled', event.reason, `stall=${event.stall}`, 'warn');
+      break;
+    case 'token_limit_reached':
+      addEvent('limit', 'Token cap reached', `tokenTotal=${event.tokenTotal} maxTotalTokens=${event.maxTotalTokens}`, 'warn');
       break;
     case 'done':
       state.lastResult = event.result;

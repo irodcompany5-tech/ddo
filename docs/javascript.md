@@ -20,9 +20,9 @@ export OPENAI_API_KEY="<your-openai-api-key>"
 import { DDOOptimizer } from "ddo-prompt-optimizer";
 
 const optimizer = new DDOOptimizer({
-  teacherModel: "gpt-5.5",
-  studentModel: "gpt-5.5",
-  verifierModel: "gpt-5.5"
+  teacherModel: "google/gemma-4-31b-it",
+  studentModel: "google/gemma-4-31b-it",
+  verifierModel: "google/gemma-4-31b-it"
 });
 
 const result = await optimizer.optimize({
@@ -96,8 +96,8 @@ const optimizer = new DDOOptimizer({ evaluatePrompt });
 ddo optimize \
   --prompt prompt.txt \
   --dataset examples/dataset.jsonl \
-  --teacher-model gpt-5.5 \
-  --student-model gpt-5.5 \
+  --teacher-model google/gemma-4-31b-it \
+  --student-model google/gemma-4-31b-it \
   --output optimized-prompt.txt
 ```
 
