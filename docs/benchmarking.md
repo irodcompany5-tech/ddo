@@ -151,6 +151,8 @@ The repository includes a complete IFEval run report at [benchmarks/ifeval/resul
 It is a mixed result: the optimized prompt regressed on validation, but it improved the held-out strict test score.
 Publish the numbers you actually got, not the numbers you wanted.
 
+The second optimization pass from the checkpoint prompt recovered some validation loose accuracy, but the held-out strict test score fell back to the original baseline. After two rounds, the strict test gain is zero.
+
 ## Sources
 
 - [GSM8K official repository](https://github.com/openai/grade-school-math)

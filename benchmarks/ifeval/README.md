@@ -31,6 +31,7 @@ Use these OpenRouter model IDs:
 | [prompts/base-system.md](prompts/base-system.md) | Baseline system prompt for the base model |
 | [prompts/ddo-optimized-prompt.md](prompts/ddo-optimized-prompt.md) | Optimized prompt from the recorded DDO run |
 | [prompts/checkpoint-prompt.md](prompts/checkpoint-prompt.md) | Checkpoint prompt for the next optimization pass |
+| [prompts/claude-round2-optimized-prompt.md](prompts/claude-round2-optimized-prompt.md) | Optimized prompt from the second pass |
 | [prompts/optimizer-behavior-spec.md](prompts/optimizer-behavior-spec.md) | DDO behavior spec for fitting prompts |
 | [prompts/evaluator-system.md](prompts/evaluator-system.md) | LLM evaluator prompt for qualitative auditing |
 | [results.md](results.md) | Detailed report for the recorded validation and test run |
@@ -148,5 +149,7 @@ A completed sample run is recorded in [results.md](results.md). The headline out
 - The DDO loop stopped after `6` budgeted exchanges with `best_score = 0.0`.
 
 The response logs also include token and cost data for each run. Treat latency as diagnostic only; the older run logs were captured before the runner switched to monotonic timing.
+
+The second optimization pass improved validation loose accuracy from `0.78` to `0.80`, but it moved the held-out strict test score back from `0.86` to `0.84`. The two-round strict test gain from the original baseline is still `0.00`.
 
 Do not claim improvement unless held-out test scores improve.

@@ -25,6 +25,7 @@ This page records the deterministic 150/50/50 IFEval experiment for DDO in this 
 | [prompts/base-system.md](prompts/base-system.md) | Baseline system prompt |
 | [prompts/ddo-optimized-prompt.md](prompts/ddo-optimized-prompt.md) | Prompt produced by the recorded DDO run |
 | [prompts/checkpoint-prompt.md](prompts/checkpoint-prompt.md) | Checkpoint prompt for the next optimization pass |
+| [prompts/claude-round2-optimized-prompt.md](prompts/claude-round2-optimized-prompt.md) | Prompt produced by the second optimization pass |
 | [prompts/optimizer-behavior-spec.md](prompts/optimizer-behavior-spec.md) | Optimization behavior spec |
 | [prompts/evaluator-system.md](prompts/evaluator-system.md) | Qualitative evaluator prompt |
 
@@ -80,3 +81,51 @@ ddo-optimize \
   --output run-results/ifeval/claude-checkpoint-optimized-prompt.md \
   --result-json run-results/ifeval/claude-checkpoint-run.json
 ```
+
+## Second Optimization Pass
+
+The second pass starts from the checkpoint prompt and uses Claude Sonnet 4.6 as the optimizer/teacher model.
+
+| Item | Value |
+| --- | --- |
+| Base prompt | [prompts/checkpoint-prompt.md](prompts/checkpoint-prompt.md) |
+| Optimized prompt | [prompts/claude-round2-optimized-prompt.md](prompts/claude-round2-optimized-prompt.md) |
+| Optimizer/teacher model | `anthropic/claude-sonnet-4.6` |
+| Student model | `google/gemma-3n-e4b-it` |
+| Verifier model | `google/gemma-4-31b-it` |
+| DDO horizon | 3 |
+| DDO budget | 6 |
+| DDO stop reason | `budget_exhausted` |
+| DDO iterations | 2 |
+| DDO verifier best score | `0.0` |
+| DDO token usage | 43,776 total tokens |
+
+## Second Pass Validation
+
+| Metric | Checkpoint | Round 2 | Delta |
+| --- | ---: | ---: | ---: |
+| Strict prompt accuracy | 0.76 | 0.76 | 0.00 |
+| Strict instruction accuracy | 0.8148148148 | 0.8271604938 | +0.0123456790 |
+| Loose prompt accuracy | 0.78 | 0.80 | +0.02 |
+| Loose instruction accuracy | 0.8271604938 | 0.8518518519 | +0.0246913580 |
+| Examples | 50 | 50 | 0 |
+| Instructions | 81 | 81 | 0 |
+| Response tokens | 24,869 | 24,927 | +58 |
+| Response cost | $0.00250218 | $0.00236814 | -$0.00013404 |
+
+## Second Pass Held-Out Test
+
+| Metric | Checkpoint | Round 2 | Delta |
+| --- | ---: | ---: | ---: |
+| Strict prompt accuracy | 0.86 | 0.84 | -0.02 |
+| Strict instruction accuracy | 0.9102564103 | 0.8974358974 | -0.0128205128 |
+| Loose prompt accuracy | 0.86 | 0.86 | 0.00 |
+| Loose instruction accuracy | 0.9102564103 | 0.9102564103 | 0.00 |
+| Examples | 50 | 50 | 0 |
+| Instructions | 78 | 78 | 0 |
+| Response tokens | 22,109 | 23,822 | +1,713 |
+| Response cost | $0.00218040 | $0.00224496 | +$0.00006456 |
+
+## Second Pass Conclusion
+
+The second optimization pass improved validation loose accuracy, but the held-out strict test score moved back to `0.84`, which matches the original baseline. The two-round net strict held-out gain is zero.
