@@ -20,6 +20,7 @@ Use it as a web UI, a Python package, an npm package, a CLI, a Jupyter notebook,
 | Plug into DeepEval | [DeepEval guide](docs/deepeval.md) |
 | Plug into another evaluator | [Evaluation adapters](docs/evaluation-adapters.md) |
 | Benchmark before/after results | [Benchmarking guide](docs/benchmarking.md) |
+| Defensible claim framing | [Benchmark claims](benchmarks/claims.md) |
 | See published benchmark results | [Benchmark results](benchmarks/results.md) |
 | Run from a terminal | [CLI guide](docs/cli.md) |
 | Understand all docs | [Documentation hub](docs/README.md) |

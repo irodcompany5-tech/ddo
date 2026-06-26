@@ -153,6 +153,8 @@ Publish the numbers you actually got, not the numbers you wanted.
 
 The second optimization pass from the checkpoint prompt recovered some validation loose accuracy, but the held-out strict test score fell back to the original baseline. After two rounds, the strict test gain is zero.
 
+For the defensible benchmark story, read [benchmarks/claims.md](../benchmarks/claims.md). That page states the bounded claim you can make without overreaching.
+
 ## Sources
 
 - [GSM8K official repository](https://github.com/openai/grade-school-math)
