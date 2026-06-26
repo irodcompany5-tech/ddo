@@ -143,6 +143,12 @@ python -m pip install -e ".[benchmarks]"
 
 Then follow [benchmarks/ifeval/README.md](../benchmarks/ifeval/README.md) for baseline, DDO, and held-out scoring commands.
 
+## Recorded Example
+
+The repository includes a complete IFEval run report at [benchmarks/ifeval/results.md](../benchmarks/ifeval/results.md).
+It is a mixed result: the optimized prompt regressed on validation, but it improved the held-out strict test score.
+Publish the numbers you actually got, not the numbers you wanted.
+
 ## Sources
 
 - [GSM8K official repository](https://github.com/openai/grade-school-math)

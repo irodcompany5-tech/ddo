@@ -15,6 +15,8 @@ Fast links:
 - [DeepEval](deepeval.md)
 - [Evaluation adapters](evaluation-adapters.md)
 - [Benchmarking](benchmarking.md)
+- [Benchmark results](../benchmarks/results.md)
+- [IFEval report](../benchmarks/ifeval/results.md)
 - [Dataset format](dataset-format.md)
 - [Configuration](configuration.md)
 - [Troubleshooting](troubleshooting.md)

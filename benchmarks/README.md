@@ -8,6 +8,7 @@ This folder is for reproducible before/after evidence for DDO prompt optimizatio
 | --- | --- |
 | [manifest.json](manifest.json) | Curated public benchmark shortlist and integration notes |
 | [results-template.csv](results-template.csv) | CSV schema for benchmark results |
+| [results.md](results.md) | Published benchmark result table |
 | [ifeval/](ifeval/) | Ready-to-run IFEval 150/50/50 split and prompts |
 
 ## Workflow

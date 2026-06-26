@@ -20,6 +20,7 @@ Use it as a web UI, a Python package, an npm package, a CLI, a Jupyter notebook,
 | Plug into DeepEval | [DeepEval guide](docs/deepeval.md) |
 | Plug into another evaluator | [Evaluation adapters](docs/evaluation-adapters.md) |
 | Benchmark before/after results | [Benchmarking guide](docs/benchmarking.md) |
+| See published benchmark results | [Benchmark results](benchmarks/results.md) |
 | Run from a terminal | [CLI guide](docs/cli.md) |
 | Understand all docs | [Documentation hub](docs/README.md) |
 
@@ -153,8 +154,8 @@ Start with:
 | [ddo_optimizer/](ddo_optimizer/) | Python package, CLI, OpenAI client, DeepEval adapter |
 | [notebooks/](notebooks/) | Jupyter walkthroughs |
 | [examples/](examples/) | Starter datasets |
-| [benchmarks/](benchmarks/) | Benchmark manifest and result table template |
-| [benchmarks/ifeval/](benchmarks/ifeval/) | Deterministic 150/50/50 IFEval experiment |
+| [benchmarks/](benchmarks/) | Benchmark manifest, result table, and templates |
+| [benchmarks/ifeval/](benchmarks/ifeval/) | Deterministic 150/50/50 IFEval experiment and report |
 | [docs/](docs/) | User and maintainer documentation |
 | [.github/workflows/ci.yml](.github/workflows/ci.yml) | CI checks for code, docs, and tests |
 

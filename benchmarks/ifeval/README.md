@@ -29,8 +29,10 @@ Use these OpenRouter model IDs:
 | File | Purpose |
 | --- | --- |
 | [prompts/base-system.md](prompts/base-system.md) | Baseline system prompt for the base model |
+| [prompts/ddo-optimized-prompt.md](prompts/ddo-optimized-prompt.md) | Optimized prompt from the recorded DDO run |
 | [prompts/optimizer-behavior-spec.md](prompts/optimizer-behavior-spec.md) | DDO behavior spec for fitting prompts |
 | [prompts/evaluator-system.md](prompts/evaluator-system.md) | LLM evaluator prompt for qualitative auditing |
+| [results.md](results.md) | Detailed report for the recorded validation and test run |
 
 ## Setup
 
@@ -110,5 +112,17 @@ Append final rows to `benchmarks/results.csv`, then run:
 ```bash
 npm run benchmarks:table -- benchmarks/results.csv > benchmarks/results.md
 ```
+
+## Observed Run
+
+A completed sample run is recorded in [results.md](results.md). The headline outcome is mixed:
+
+- Validation strict accuracy moved from `0.80` to `0.76`.
+- Validation loose accuracy moved from `0.82` to `0.78`.
+- Held-out test strict accuracy moved from `0.84` to `0.86`.
+- Held-out test loose accuracy stayed at `0.86`.
+- The DDO loop stopped after `6` budgeted exchanges with `best_score = 0.0`.
+
+The response logs also include token and cost data for each run. Treat latency as diagnostic only; the older run logs were captured before the runner switched to monotonic timing.
 
 Do not claim improvement unless held-out test scores improve.

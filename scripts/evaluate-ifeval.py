@@ -28,6 +28,7 @@ def main() -> int:
     args = parser.parse_args()
 
     package_dir = ensure_official_evaluator(Path(args.cache_dir))
+    ensure_nltk_data(Path(args.cache_dir) / "nltk_data")
     sys.path.insert(0, str(package_dir.parent))
     evaluation_lib = load_module(package_dir / "evaluation_lib.py", "instruction_following_eval.evaluation_lib")
 
@@ -66,6 +67,18 @@ def ensure_official_evaluator(cache_dir: Path) -> Path:
             with urllib.request.urlopen(f"{BASE_URL}/{filename}", timeout=60) as response:
                 destination.write_bytes(response.read())
     return package_dir
+
+
+def ensure_nltk_data(nltk_dir: Path) -> None:
+    nltk_dir.mkdir(parents=True, exist_ok=True)
+    import nltk
+
+    nltk.data.path.insert(0, str(nltk_dir))
+    for package in ["punkt", "punkt_tab"]:
+        try:
+            nltk.data.find(f"tokenizers/{package}")
+        except LookupError:
+            nltk.download(package, download_dir=str(nltk_dir), quiet=True)
 
 
 def load_module(path: Path, module_name: str):

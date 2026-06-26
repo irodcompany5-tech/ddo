@@ -55,9 +55,10 @@ def main() -> int:
 
     with output_path.open("a" if args.resume else "w", encoding="utf-8") as file:
         for index, example in enumerate(examples, start=1):
-            if example["prompt"] in completed:
+            marker = str(example.get("key") or example["prompt"])
+            if marker in completed or str(example["prompt"]) in completed:
                 continue
-            started = time.time()
+            started = time.monotonic()
             response = client.chat.completions.create(
                 model=args.model,
                 messages=[
@@ -74,11 +75,13 @@ def main() -> int:
                 "prompt": example["prompt"],
                 "response": text,
                 "model": args.model,
-                "latency_seconds": round(time.time() - started, 3),
+                "latency_seconds": round(time.monotonic() - started, 3),
                 "usage": usage,
             }
             file.write(json.dumps(record, ensure_ascii=False) + "\n")
             file.flush()
+            completed.add(marker)
+            completed.add(str(example["prompt"]))
             print(json.dumps({"index": index, "key": example.get("key"), "latency_seconds": record["latency_seconds"], "usage": usage}))
             if args.sleep:
                 time.sleep(args.sleep)
@@ -93,7 +96,16 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
 def read_completed(path: Path) -> set[str]:
     if not path.exists():
         return set()
-    return {json.loads(line)["prompt"] for line in path.read_text(encoding="utf-8").splitlines() if line.strip()}
+    completed: set[str] = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        record = json.loads(line)
+        if record.get("key") is not None:
+            completed.add(str(record["key"]))
+        if record.get("prompt") is not None:
+            completed.add(str(record["prompt"]))
+    return completed
 
 
 def object_to_dict(value: Any) -> dict[str, Any] | None:

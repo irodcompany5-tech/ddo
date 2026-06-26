@@ -13,6 +13,8 @@ This is the documentation hub for Diagnostic Dialogue Optimization (DDO). It is 
 | Use DeepEval | [DeepEval](deepeval.md) | Goldens, metrics, model callback adapter |
 | Use another eval platform | [Evaluation adapters](evaluation-adapters.md) | Generic evaluator contract for any framework |
 | Publish before/after evidence | [Benchmarking](benchmarking.md) | Benchmark shortlist, protocol, result table format |
+| See benchmark results | [Benchmark results](../benchmarks/results.md) | Published result table |
+| Read the IFEval report | [IFEval report](../benchmarks/ifeval/results.md) | Full 150/50/50 run report |
 | Prepare data | [Dataset format](dataset-format.md) | JSON, JSONL, CSV, text, aliases, tips |
 | Tune settings | [Configuration](configuration.md) | API keys, model IDs, budgets, verifier settings |
 | Run terminal workflows | [CLI](cli.md) | Python and npm command examples |
